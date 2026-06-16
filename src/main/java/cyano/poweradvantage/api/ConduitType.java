@@ -1,6 +1,6 @@
 package cyano.poweradvantage.api;
 
-import cyano.poweradvantage.util.HashCodeHelper;
+import com.mcmoddev.poweradvantage.util.HashCodeHelper;
 
 import java.util.Locale;
 

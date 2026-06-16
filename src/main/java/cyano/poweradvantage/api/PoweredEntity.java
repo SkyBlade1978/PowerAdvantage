@@ -1,6 +1,6 @@
 package cyano.poweradvantage.api;
 
-import cyano.poweradvantage.conduitnetwork.ConduitRegistry;
+import com.mcmoddev.poweradvantage.conduitnetwork.ConduitRegistry;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;

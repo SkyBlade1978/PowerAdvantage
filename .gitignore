@@ -8,11 +8,17 @@
 *.launch
 /output
 
+# Local agent notes
+/AGENTS.md
+/agent-notes/
+
 #ForgeGradle
 /build
 /.gradle
 /eclipse/assets
-/libs
+/libs/*
+!/libs/RF-API.jar
+!/libs/RF-API.zip
 /bin/
 /run/
 /out/

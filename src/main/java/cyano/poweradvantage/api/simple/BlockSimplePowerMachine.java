@@ -1,7 +1,7 @@
 package cyano.poweradvantage.api.simple;
 
 import cyano.poweradvantage.api.*;
-import cyano.poweradvantage.conduitnetwork.ConduitRegistry;
+import com.mcmoddev.poweradvantage.conduitnetwork.ConduitRegistry;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -28,7 +28,7 @@ import java.util.Random;
  * block with an inventory and user interface that gives power to connected 
  * machines.<br>
  * Example usage:<br><pre>
-int guiID = cyano.poweradvantage.registry.MachineGUIRegistry.addGUI(new MySimpleMachineGUI());
+int guiID = com.mcmoddev.poweradvantage.registry.MachineGUIRegistry.addGUI(new MySimpleMachineGUI());
 Block myMachineBlock = new MyBlockSimplePowerSource(guiID,PowerAdvantage.getInstance());
 myMachineBlock.setUnlocalizedName(MODID+"."+"my_machine");
 GameRegistry.registerBlock(myMachineBlock,"my_machine");

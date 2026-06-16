@@ -1,9 +1,9 @@
 package cyano.poweradvantage.api.simple;
 
 
-import cyano.poweradvantage.PowerAdvantage;
-import cyano.poweradvantage.math.Integer2D;
-import cyano.poweradvantage.registry.ITileEntityGUI;
+import com.mcmoddev.poweradvantage.PowerAdvantage;
+import com.mcmoddev.poweradvantage.math.Integer2D;
+import com.mcmoddev.poweradvantage.registry.ITileEntityGUI;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
