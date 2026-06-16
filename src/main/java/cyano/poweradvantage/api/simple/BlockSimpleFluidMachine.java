@@ -1,6 +1,6 @@
 package cyano.poweradvantage.api.simple;
 
-import cyano.poweradvantage.init.Fluids;
+import com.mcmoddev.poweradvantage.init.Fluids;
 import net.minecraft.block.material.Material;
 
 /**
@@ -8,7 +8,7 @@ import net.minecraft.block.material.Material;
  * block with an inventory and user interface that gives fluids to connected 
  * fluid consumers.<br>
  * Example usage:<br><pre>
-int guiID = cyano.poweradvantage.registry.MachineGUIRegistry.addGUI(new MySimpleMachineGUI());
+int guiID = com.mcmoddev.poweradvantage.registry.MachineGUIRegistry.addGUI(new MySimpleMachineGUI());
 Block myMachineBlock = new MyBlockSimpleFluidSource(guiID,PowerAdvantage.getInstance());
 myMachineBlock.setUnlocalizedName(MODID+"."+"my_machine");
 GameRegistry.registerBlock(myMachineBlock,"my_machine");

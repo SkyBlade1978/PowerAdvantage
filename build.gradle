@@ -48,7 +48,7 @@ version = mc_version + '-' + short_version
 if (System.getenv().BUILD_NUMBER) {
     version += '.' + System.getenv().BUILD_NUMBER
 }
-group= 'cyano.poweradvantage'
+group= 'com.mcmoddev.poweradvantage'
 archivesBaseName = 'PowerAdvantage'
 sourceCompatibility = targetCompatibility = '1.8'
 
@@ -102,10 +102,6 @@ repositories {
         name 'tterrag'
         url 'http://maven.tterrag.com/'
     }
-    maven {
-        name 'MMD'
-        url 'https://maven.mcmoddev.com/'
-    }
     maven { // MCMultipart
         name 'amadornes'
         url 'http://maven.amadornes.com/'
@@ -150,11 +146,10 @@ repositories {
 
 dependencies {
 	compile files(
-			'libs/RF-API.jar',
+			'libs/RF-API.jar'
 //			'libs/RebornCore-1.9-API.jar'
     )
     compile "net.darkhax.tesla:Tesla:1.10.2-1.2.1.50"
-    deobfCompile "cyano:BaseMetals:1.10.2-2.4.0"
 //    compile "codechicken:CodeChickenCore:1.8-1.0.5.36:dev"
 //    compile "codechicken:NotEnoughItems:1.8-1.0.5.104:dev"
 	deobfCompile('RebornCore:RebornCore-1.10.2:+:universal') {
