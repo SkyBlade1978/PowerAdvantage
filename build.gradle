@@ -52,6 +52,12 @@ group= 'com.mcmoddev.poweradvantage'
 archivesBaseName = 'PowerAdvantage'
 sourceCompatibility = targetCompatibility = '1.8'
 
+// RF support is compiled against this local API jar because the old 1.10-era
+// dependency setup predates the current Maven ecosystem.
+def localLibDir = file('libs')
+def rfApiJarName = 'RF-API.jar'
+def rfApiJar = new File(localLibDir, rfApiJarName)
+
 class Secrets {
     def data = null
 
@@ -145,10 +151,8 @@ repositories {
 }
 
 dependencies {
-	compile files(
-			'libs/RF-API.jar'
-//			'libs/RebornCore-1.9-API.jar'
-    )
+	compile files(rfApiJar)
+//	compile files(new File(localLibDir, 'RebornCore-1.9-API.jar'))
     compile "net.darkhax.tesla:Tesla:1.10.2-1.2.1.50"
 //    compile "codechicken:CodeChickenCore:1.8-1.0.5.36:dev"
 //    compile "codechicken:NotEnoughItems:1.8-1.0.5.104:dev"
