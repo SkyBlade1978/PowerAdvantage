@@ -3,6 +3,7 @@ package com.mcmoddev.poweradvantage.machines.fluidmachines.modsupport;
 import cyano.poweradvantage.api.ConduitType;
 import com.mcmoddev.poweradvantage.init.Blocks;
 import com.mcmoddev.poweradvantage.machines.fluidmachines.FluidPipeBlock;
+import com.mcmoddev.poweradvantage.util.FluidHandlerHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.state.IBlockState;
@@ -13,7 +14,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.IFluidHandler;
 
 @SuppressWarnings("deprecation")
 public class TerminalFluidPipeBlock extends FluidPipeBlock implements ITileEntityProvider {
@@ -37,8 +37,9 @@ public class TerminalFluidPipeBlock extends FluidPipeBlock implements ITileEntit
 	/**
 	 * Called when a neighboring block changes.
 	 */
-	public void onNeighborBlockChange(World w, BlockPos pos, IBlockState state, Block neighborBlock) {
-		pipeCheck(w, pos);
+	@Override
+	public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		pipeCheck(worldIn, pos);
 	}
 
 	/**
@@ -73,7 +74,8 @@ public class TerminalFluidPipeBlock extends FluidPipeBlock implements ITileEntit
 	 */
 	@Override
 	protected boolean canConnectTo(IBlockAccess w, BlockPos thisBlock, IBlockState bs, EnumFacing face, BlockPos otherBlock) {
-		return super.canConnectTo(w, thisBlock, bs, face, otherBlock) || w.getTileEntity(otherBlock) instanceof IFluidHandler;
+		return super.canConnectTo(w, thisBlock, bs, face, otherBlock)
+				|| FluidHandlerHelper.hasHandler(w.getTileEntity(otherBlock), face.getOpposite());
 	}
 
 }

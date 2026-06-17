@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.registry.GameData;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
 
@@ -55,7 +55,7 @@ public final class BaseMetalsCompat {
 		ItemStack stack = firstOre("plateSteel", 1);
 		if (stack != null) return stack;
 
-		Block block = GameData.getBlockRegistry().getObject(new ResourceLocation(MODID, "steel_plate"));
+		Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MODID, "steel_plate"));
 		if (block != null) {
 			Item item = Item.getItemFromBlock(block);
 			if (item != null) return new ItemStack(block, 1);
@@ -78,7 +78,7 @@ public final class BaseMetalsCompat {
 		List<ItemStack> ores = OreDictionary.getOres(oreDictionaryName);
 		if (ores.isEmpty()) return null;
 		ItemStack copy = ores.get(0).copy();
-		copy.stackSize = count;
+		copy.setCount(count);
 		return copy;
 	}
 

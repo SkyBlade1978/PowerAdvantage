@@ -5,6 +5,7 @@ import cyano.poweradvantage.api.simple.TileEntitySimpleFluidMachine;
 import com.mcmoddev.poweradvantage.registry.FuelRegistry;
 import com.mcmoddev.poweradvantage.registry.still.recipe.DistillationRecipe;
 import com.mcmoddev.poweradvantage.registry.still.recipe.DistillationRecipeRegistry;
+import com.mcmoddev.poweradvantage.util.FluidIdHelper;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,7 +19,7 @@ public class StillTileEntity extends TileEntitySimpleFluidMachine {
 
 
 	private final ItemStack[] inventory = new ItemStack[1];
-	private final FluidTank inputTank = new FluidTank(FluidContainerRegistry.BUCKET_VOLUME);
+	private final FluidTank inputTank = new FluidTank(Fluid.BUCKET_VOLUME);
 	private int[] dataFields = new int[6];
 	private static final int DATAFIELD_FLUID_ID1 = 0; // index in the dataFields array
 	private static final int DATAFIELD_FLUID_VOLUME1 = 1; // index in the dataFields array
@@ -36,7 +37,7 @@ public class StillTileEntity extends TileEntitySimpleFluidMachine {
 
 
 	public StillTileEntity() {
-		super(FluidContainerRegistry.BUCKET_VOLUME, StillTileEntity.class.getName());
+		super(Fluid.BUCKET_VOLUME, StillTileEntity.class.getName());
 	}
 
 	@Override
@@ -331,14 +332,20 @@ public class StillTileEntity extends TileEntitySimpleFluidMachine {
 		if (fluidVolume1 <= 0) {
 			inputTank.setFluid(new FluidStack(FluidRegistry.WATER, 0));
 		} else {
-			FluidStack fs = new FluidStack(FluidRegistry.getFluid(fluidID1), fluidVolume1);
-			inputTank.setFluid(fs);
+			Fluid fluid = FluidIdHelper.getFluid(fluidID1);
+			if (fluid != null) {
+				FluidStack fs = new FluidStack(fluid, fluidVolume1);
+				inputTank.setFluid(fs);
+			}
 		}
 		if (fluidVolume2 <= 0) {
 			getTank().setFluid(new FluidStack(FluidRegistry.WATER, 0));
 		} else {
-			FluidStack fs = new FluidStack(FluidRegistry.getFluid(fluidID2), fluidVolume2);
-			getTank().setFluid(fs);
+			Fluid fluid = FluidIdHelper.getFluid(fluidID2);
+			if (fluid != null) {
+				FluidStack fs = new FluidStack(fluid, fluidVolume2);
+				getTank().setFluid(fs);
+			}
 		}
 		this.burnTime = (short) dataFields[DATAFIELD_BURNTIME];
 		this.totalBurnTime = (short) dataFields[DATAFIELD_TOTALBURN];
@@ -365,21 +372,71 @@ public class StillTileEntity extends TileEntitySimpleFluidMachine {
 	 */
 	public void prepareDataFieldsForSync() {
 		if (inputTank.getFluid() == null || inputTank.getFluidAmount() <= 0) {
-			dataFields[DATAFIELD_FLUID_ID1] = FluidRegistry.getFluidID(FluidRegistry.WATER);
+			dataFields[DATAFIELD_FLUID_ID1] = FluidIdHelper.getFluidId(FluidRegistry.WATER);
 			dataFields[DATAFIELD_FLUID_VOLUME1] = 0;
 		} else {
-			dataFields[DATAFIELD_FLUID_ID1] = FluidRegistry.getFluidID(inputTank.getFluid().getFluid());
+			dataFields[DATAFIELD_FLUID_ID1] = FluidIdHelper.getFluidId(inputTank.getFluid().getFluid());
 			dataFields[DATAFIELD_FLUID_VOLUME1] = inputTank.getFluidAmount();
 		}
 		if (getTank().getFluid() == null || getTank().getFluidAmount() <= 0) {
-			dataFields[DATAFIELD_FLUID_ID2] = FluidRegistry.getFluidID(FluidRegistry.WATER);
+			dataFields[DATAFIELD_FLUID_ID2] = FluidIdHelper.getFluidId(FluidRegistry.WATER);
 			dataFields[DATAFIELD_FLUID_VOLUME2] = 0;
 		} else {
-			dataFields[DATAFIELD_FLUID_ID2] = FluidRegistry.getFluidID(getTank().getFluid().getFluid());
+			dataFields[DATAFIELD_FLUID_ID2] = FluidIdHelper.getFluidId(getTank().getFluid().getFluid());
 			dataFields[DATAFIELD_FLUID_VOLUME2] = getTank().getFluidAmount();
 		}
 		dataFields[DATAFIELD_BURNTIME] = this.burnTime;
 		dataFields[DATAFIELD_TOTALBURN] = this.totalBurnTime;
+	}
+
+	@Override
+	public NBTTagCompound createDataFieldUpdateTag() {
+		this.prepareDataFieldsForSync();
+		NBTTagCompound nbtTag = new NBTTagCompound();
+		NBTTagCompound inputTankTag = new NBTTagCompound();
+		inputTank.writeToNBT(inputTankTag);
+		nbtTag.setTag("InputTank", inputTankTag);
+		NBTTagCompound outputTankTag = new NBTTagCompound();
+		getTank().writeToNBT(outputTankTag);
+		nbtTag.setTag("Tank", outputTankTag);
+		nbtTag.setShort("burnTime", this.burnTime);
+		nbtTag.setShort("totalBurnTime", this.totalBurnTime);
+		nbtTag.setIntArray("[]", this.getDataFieldArray());
+		return nbtTag;
+	}
+
+	@Override
+	public void readDataFieldUpdateTag(NBTTagCompound tag) {
+		boolean usedFluidNbt = false;
+		if (tag.hasKey("InputTank", 10)) {
+			NBTTagCompound inputTankTag = tag.getCompoundTag("InputTank");
+			inputTank.readFromNBT(inputTankTag);
+			if (inputTankTag.hasKey("Empty")) {
+				inputTank.setFluid(null);
+			}
+			usedFluidNbt = true;
+		}
+		if (tag.hasKey("Tank", 10)) {
+			NBTTagCompound outputTankTag = tag.getCompoundTag("Tank");
+			getTank().readFromNBT(outputTankTag);
+			if (outputTankTag.hasKey("Empty")) {
+				getTank().setFluid(null);
+			}
+			usedFluidNbt = true;
+		}
+		if (tag.hasKey("burnTime")) {
+			this.burnTime = tag.getShort("burnTime");
+		}
+		if (tag.hasKey("totalBurnTime")) {
+			this.totalBurnTime = tag.getShort("totalBurnTime");
+		}
+		if (tag.hasKey("[]", 11)) {
+			int[] newData = tag.getIntArray("[]");
+			System.arraycopy(newData, 0, this.getDataFieldArray(), 0, Math.min(newData.length, this.getDataFieldArray().length));
+			if (!usedFluidNbt) {
+				this.onDataFieldUpdate();
+			}
+		}
 	}
 
 	///// end of multi-tank overrides /////

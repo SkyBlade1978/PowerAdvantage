@@ -7,7 +7,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.registry.GameData;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class ItemGroups {
 
@@ -38,11 +38,10 @@ public class ItemGroups {
 		return catA.compareToIgnoreCase(catB);
 	}
 
-	@SuppressWarnings("deprecation")
 	private static String catagorize(ItemStack i) {
 		StringBuilder sb = new StringBuilder();
 		Item item = i.getItem();
-		sb.append(GameData.getItemRegistry().getNameForObject(item).getResourceDomain());
+		sb.append(ForgeRegistries.ITEMS.getKey(item).getResourceDomain());
 		if (item instanceof ItemBlock) {
 			if (((ItemBlock) item).getBlock() instanceof ITileEntityProvider) {
 				sb.append("A");

@@ -49,6 +49,11 @@ public class InventoryWrapper implements ISidedInventory {
 			}
 
 			@Override
+			public boolean isEmpty() {
+				return true;
+			}
+
+			@Override
 			public ItemStack getStackInSlot(int i) {
 				return null;
 			}
@@ -180,6 +185,11 @@ public class InventoryWrapper implements ISidedInventory {
 	@Override
 	public void clear() {
 		inventory.clear();
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return inventory.isEmpty();
 	}
 
 	@Override

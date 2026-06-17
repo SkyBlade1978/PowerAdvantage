@@ -196,16 +196,16 @@ guiContainer.drawTexturedModalRect(x+79, y+35, 0, 0, arrowLength, 17); // x, y, 
 					return null;
 				}
 
-				if (stackInSlot.stackSize == 0) {
+				if (stackInSlot.isEmpty()) {
 					slotObject.putStack(null);
 				} else {
 					slotObject.onSlotChanged();
 				}
 
-				if (stackInSlot.stackSize == stack.stackSize) {
+				if (stackInSlot.getCount() == stack.getCount()) {
 					return null;
 				}
-				slotObject.onPickupFromSlot(player, stackInSlot);
+				slotObject.onTake(player, stackInSlot);
 			}
 			return stack;
 		}

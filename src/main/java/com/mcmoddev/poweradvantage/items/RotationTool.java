@@ -2,7 +2,6 @@ package com.mcmoddev.poweradvantage.items;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -19,8 +18,8 @@ public class RotationTool extends net.minecraft.item.Item {
 
 	@Override
 	public EnumActionResult onItemUse(
-			final ItemStack item, final EntityPlayer player, final World w,
-			final BlockPos coord, final EnumHand hand, final EnumFacing facing,
+			final EntityPlayer player, final World w, final BlockPos coord,
+			final EnumHand hand, final EnumFacing facing,
 			final float partialX, final float partialY, final float partialZ
 	) {
 		IBlockState bs = w.getBlockState(coord);

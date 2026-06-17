@@ -31,7 +31,8 @@ import java.util.Random;
 int guiID = com.mcmoddev.poweradvantage.registry.MachineGUIRegistry.addGUI(new MySimpleMachineGUI());
 Block myMachineBlock = new MyBlockSimplePowerSource(guiID,PowerAdvantage.getInstance());
 myMachineBlock.setUnlocalizedName(MODID+"."+"my_machine");
-GameRegistry.registerBlock(myMachineBlock,"my_machine");
+myMachineBlock.setRegistryName(MODID, "my_machine");
+net.minecraftforge.fml.common.registry.ForgeRegistries.BLOCKS.register(myMachineBlock);
  * </pre>
  * @author DrCyano
  *

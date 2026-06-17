@@ -168,7 +168,7 @@ public class BlockPowerSwitch extends Block implements ITypedConduit {
 	}
 
 	@Override
-	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block) {
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos fromPos) {
 		onNeighborChange(world, pos, pos);
 	}
 

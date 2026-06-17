@@ -1,0 +1,7 @@
+{
+	"conditions": {
+		"recipe_mode": "com.mcmoddev.poweradvantage.recipe.condition.RecipeModeConditionFactory",
+		"not_recipe_mode": "com.mcmoddev.poweradvantage.recipe.condition.NotRecipeModeConditionFactory",
+		"ore_dict_empty": "com.mcmoddev.poweradvantage.recipe.condition.OreDictEmptyConditionFactory"
+	}
+}

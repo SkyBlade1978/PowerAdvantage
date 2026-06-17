@@ -1,5 +1,4 @@
 {
-  "parent": "block/block",
   "parent": "poweradvantage:block/pipe4_desuw",
     "textures": {
         "texture": "poweradvantage:blocks/fluid_pipe",

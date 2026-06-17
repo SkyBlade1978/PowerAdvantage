@@ -8,6 +8,8 @@ import com.mcmoddev.poweradvantage.init.Fluids;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 import java.util.List;
 
@@ -170,12 +172,43 @@ public abstract class FluidPoweredEntity extends PoweredEntity implements IFluid
 
 	/**
 	 * Implementation of IFluidHandler
+	 */
+	@Override
+	public IFluidTankProperties[] getTankProperties() {
+		return getTank().getTankProperties();
+	}
+
+	/**
+	 * Implementation of IFluidHandler
+	 */
+	@Override
+	public int fill(FluidStack fluid, boolean forReal) {
+		return fill(null, fluid, forReal);
+	}
+
+	/**
+	 * Implementation of IFluidHandler
+	 */
+	@Override
+	public FluidStack drain(FluidStack fluid, boolean forReal) {
+		return drain(null, fluid, forReal);
+	}
+
+	/**
+	 * Implementation of IFluidHandler
+	 */
+	@Override
+	public FluidStack drain(int amount, boolean forReal) {
+		return drain(null, amount, forReal);
+	}
+
+	/**
+	 * Legacy directional fluid helper used by Power Advantage's conduit code.
 	 *
 	 * @param face    Face of the block being polled
 	 * @param fluid   The fluid being added/removed
 	 * @param forReal if true, then the fluid in the tank will change
 	 */
-	@Override
 	public int fill(EnumFacing face, FluidStack fluid, boolean forReal) {
 		if (getTank().getFluidAmount() <= 0 || getTank().getFluid().getFluid().equals(fluid.getFluid())) {
 			return getTank().fill(fluid, forReal);
@@ -185,13 +218,12 @@ public abstract class FluidPoweredEntity extends PoweredEntity implements IFluid
 	}
 
 	/**
-	 * Implementation of IFluidHandler
+	 * Legacy directional fluid helper used by Power Advantage's conduit code.
 	 *
 	 * @param face    Face of the block being polled
 	 * @param fluid   The fluid being added/removed
 	 * @param forReal if true, then the fluid in the tank will change
 	 */
-	@Override
 	public FluidStack drain(EnumFacing face, FluidStack fluid, boolean forReal) {
 		if (getTank().getFluidAmount() > 0 && getTank().getFluid().getFluid().equals(fluid.getFluid())) {
 			return getTank().drain(fluid.amount, forReal);
@@ -201,13 +233,12 @@ public abstract class FluidPoweredEntity extends PoweredEntity implements IFluid
 	}
 
 	/**
-	 * Implementation of IFluidHandler
+	 * Legacy directional fluid helper used by Power Advantage's conduit code.
 	 *
 	 * @param face    Face of the block being polled
 	 * @param amount  The amount of fluid being added/removed
 	 * @param forReal if true, then the fluid in the tank will change
 	 */
-	@Override
 	public FluidStack drain(EnumFacing face, int amount, boolean forReal) {
 		if (getTank().getFluidAmount() > 0) {
 			return getTank().drain(amount, forReal);
@@ -217,36 +248,33 @@ public abstract class FluidPoweredEntity extends PoweredEntity implements IFluid
 	}
 
 	/**
-	 * Implementation of IFluidHandler
+	 * Legacy directional fluid helper used by Power Advantage's conduit code.
 	 *
 	 * @param face  Face of the block being polled
 	 * @param fluid The fluid being added/removed
 	 */
-	@Override
 	public boolean canFill(EnumFacing face, Fluid fluid) {
 		if (getTank().getFluid() == null) return true;
 		return getTank().getFluidAmount() <= getTank().getCapacity() && fluid.equals(getTank().getFluid().getFluid());
 	}
 
 	/**
-	 * Implementation of IFluidHandler
+	 * Legacy directional fluid helper used by Power Advantage's conduit code.
 	 *
 	 * @param face  Face of the block being polled
 	 * @param fluid The fluid being added/removed
 	 */
-	@Override
 	public boolean canDrain(EnumFacing face, Fluid fluid) {
 		if (getTank().getFluid() == null) return false;
 		return getTank().getFluidAmount() > 0 && fluid.equals(getTank().getFluid().getFluid());
 	}
 
 	/**
-	 * Implementation of IFluidHandler
+	 * Legacy directional fluid helper used by Power Advantage's conduit code.
 	 *
 	 * @param face Face of the block being polled
 	 * @return array of FluidTankInfo describing all of the FluidTanks
 	 */
-	@Override
 	public FluidTankInfo[] getTankInfo(EnumFacing face) {
 		FluidTankInfo[] arr = new FluidTankInfo[1];
 		arr[0] = getTank().getInfo();

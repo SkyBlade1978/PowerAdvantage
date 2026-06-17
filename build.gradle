@@ -1,59 +1,58 @@
-def corePlugin = ''
-
 buildscript {
     repositories {
-        jcenter()
-        maven {
-            name = 'forge'
-            url = 'http://files.minecraftforge.net/maven'
-        }
+        maven { url = 'https://maven.minecraftforge.net/' }
         maven {
             name = 'gradle'
             url 'https://plugins.gradle.org/m2/'
         }
-        maven {
-            name = 'sonatype'
-            url = 'https://oss.sonatype.org/content/groups/public'
-        }
-        maven {
-            name = 'sponge'
-            url = 'http://repo.spongepowered.org/maven'
-        }
+        mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
         classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.0.11'
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'com.matthewprenger.cursegradle'
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-apply plugin: 'org.sonarqube'
 
-javadoc {
-    failOnError = false
+def enableCurseGradle = project.hasProperty('enableCurseGradle')
+if (enableCurseGradle) {
+    apply plugin: 'com.matthewprenger.cursegradle'
 }
+
+import groovy.json.JsonSlurper
 
 description = 'Power Advantage'
 def mod_file = getModFile()
-def mc_version = '1.10.2'
+def mc_version = '1.12.2'
+def forge_version = '14.23.5.2859'
 
 ext {
     short_version = getVersion('VERSION', mod_file)
 }
 
-version = mc_version + '-' + short_version
+version = "${mc_version}-${short_version}"
 if (System.getenv().BUILD_NUMBER) {
-    version += '.' + System.getenv().BUILD_NUMBER
+    version += ".${System.getenv().BUILD_NUMBER}"
 }
-group= 'com.mcmoddev.poweradvantage'
+group = 'com.mcmoddev.poweradvantage'
 archivesBaseName = 'PowerAdvantage'
-sourceCompatibility = targetCompatibility = '1.8'
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
-// RF support is compiled against this local API jar because the old 1.10-era
-// dependency setup predates the current Maven ecosystem.
+sourceSets {
+    main {
+        // Forge's dev mod discovery uses the compiled classes output as the
+        // mod container, so keep processed resources beside classes for
+        // runClient/runServer instead of only under build/resources.
+        output.resourcesDir = output.classesDir
+    }
+}
+
+// RF support is compiled against this local API jar because this legacy API is
+// no longer available from the old mod-era Maven setup.
 def localLibDir = file('libs')
 def rfApiJarName = 'RF-API.jar'
 def rfApiJar = new File(localLibDir, rfApiJarName)
@@ -65,8 +64,6 @@ class Secrets {
         return data ? data[key] : ''
     }
 }
-
-import groovy.json.JsonSlurper
 
 def secretFile
 if (System.getenv().SECRET_FILE) {
@@ -83,19 +80,24 @@ if (secretFile.exists()) {
 }
 
 minecraft {
-    version = '1.10.2-12.18.3.2185'
-    runDir = 'run'
-    mappings = 'stable_29'
-//  coreMod = corePlugin
-//  clientJvmArgs = ["-Dfml.coreMods.load=$corePlugin"]
-//  serverJvmArgs = ["-Dfml.coreMods.load=$corePlugin"]
+    mappings channel: 'snapshot', version: '20171003-1.12'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+        }
+
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+        }
+    }
 }
 
 repositories {
-    maven {
-        name 'SpongePowered'
-        url 'https://repo.spongepowered.org/maven/'
-    }
     maven { // Mantle, TCon, JEI
         name 'DVS1 Maven FS'
         url 'http://dvs1.progwml6.com/files/maven'
@@ -104,91 +106,66 @@ repositories {
         name 'Chickenbones Repo'
         url 'http://chickenbones.net/maven/'
     }
-    maven { // The One Probe
-        name 'tterrag'
-        url 'http://maven.tterrag.com/'
-    }
-    maven { // MCMultipart
-        name 'amadornes'
-        url 'http://maven.amadornes.com/'
+    maven { // CoFH
+        name 'Covers Maven'
+        url 'http://maven.covers1624.net'
     }
     maven { // Tesla
         name 'epoxide'
         url 'http://maven.epoxide.org'
     }
-    maven { // CraftTweaker, ZenScript
-        name 'jared maven'
-        url 'http://blamejared.com/maven'
+    maven { // RebornCore / Tech Reborn
+        name 'Modmuss50'
+        url 'https://maven.modmuss50.me/'
     }
-    maven { // IC2
-        name 'industrialcraft'
-        url 'http://maven.ic2.player.to'
+    maven {
+        name 'CurseForge'
+        url 'https://minecraft.curseforge.com/api/maven/'
     }
-    maven { // WAILA/HWYLA
-    	name 'tehnut'
-    	url 'http://tehnut.info/maven'
-    }
-    maven { // CoFH
-    	name 'Covers Maven'
-    	url 'http://maven.covers1624.net'
-    }
-	maven {
-        name = 'CurseForge'
-        url = 'https://minecraft.curseforge.com/api/maven/'
-    }
-	maven {
-        name 'opencomputers'
-        url 'http://maven.cil.li/'
-    }
-    maven { // Mekanism, TAIGA
-        name 'jitpack'
-        url 'https://jitpack.io'
-    }
-	maven {
-		name = "Modmuss50"
-		url = "http://maven.modmuss50.me/"
-	}
 }
 
 dependencies {
-	compile files(rfApiJar)
-//	compile files(new File(localLibDir, 'RebornCore-1.9-API.jar'))
-    compile "net.darkhax.tesla:Tesla:1.10.2-1.2.1.50"
-//    compile "codechicken:CodeChickenCore:1.8-1.0.5.36:dev"
-//    compile "codechicken:NotEnoughItems:1.8-1.0.5.104:dev"
-	deobfCompile('RebornCore:RebornCore-1.10.2:+:universal') {
-		transitive = false
-	}
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+    compile files(rfApiJar)
+    compile fg.deobf('RebornCore:RebornCore-1.12.2:3.19.4.529:universal') {
+        transitive = false
+    }
 }
 
 processResources {
-    inputs.property 'version', project.version
-    inputs.property 'mcversion', project.minecraft.version
+    inputs.property 'version', short_version
+    inputs.property 'mcversion', mc_version
 
-    from (sourceSets.main.resources.srcDirs) {
+    from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-        expand 'version': short_version, 'mcversion': project.minecraft.version
+        expand 'version': short_version, 'mcversion': mc_version
     }
 
-    from (sourceSets.main.resources.srcDirs) {
+    from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
 }
 
 jar {
     manifest {
-//      attributes 'FMLCorePluginContainsFMLMod': 'true'
-//      attributes 'FMLCorePlugin': corePlugin
-//      attributes 'FMLAT' : ''
+        attributes([
+            'Specification-Title': project.archivesBaseName,
+            'Specification-Vendor': 'MinecraftModDevelopmentMods',
+            'Specification-Version': '1',
+            'Implementation-Title': project.archivesBaseName,
+            'Implementation-Version': project.version,
+            'Implementation-Vendor': 'MinecraftModDevelopmentMods',
+            'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
     }
 }
 
-/*
-task apiJar(type: Jar) {
-    classifier = 'apiClasses'
-    from apiClasses
+jar.finalizedBy('reobfJar')
+
+task sourceJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
-*/
 
 task deobfJar(type: Jar) {
     classifier = 'deobf'
@@ -197,11 +174,14 @@ task deobfJar(type: Jar) {
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
-    from javadoc.getDestinationDir()
+    from javadoc.destinationDir
+}
+
+javadoc {
+    failOnError = false
 }
 
 artifacts {
-//  archives apiJar
     archives deobfJar
     archives sourceJar
     archives javadocJar
@@ -217,11 +197,6 @@ publishing {
             artifact sourceJar {
                 classifier 'sources'
             }
-/*
-            artifact apiJar {
-                classifier 'api'
-            }
-*/
             artifact deobfJar {
                 classifier 'deobf'
             }
@@ -241,48 +216,36 @@ publishing {
     }
 }
 
-curseforge {
-    apiKey = secret.curseforgeAPIKey
-    project {
-        id = '240982'
-        changelog = file('CHANGELOG.txt')
-        releaseType = 'release'
-        addGameVersion(project.mc_version)
-        def projectName = 'Base Gems'
-        def displayVersion = getVersion('VERSION', mod_file)
-        if (System.getenv().BUILD_NUMBER) {
-            displayVersion += '.' + System.getenv().BUILD_NUMBER
-        }
-        mainArtifact(jar) {
-            displayName = "$project.description $displayVersion"
-            relations {
-                requiredLibrary 'mmd-orespawn'
-                requiredLibrary 'base-metals'
-                optionalLibrary 'additional-loot-tables'
+if (enableCurseGradle) {
+    curseforge {
+        apiKey = secret.curseforgeAPIKey
+        project {
+            id = '240982'
+            changelog = file('CHANGELOG.txt')
+            releaseType = 'release'
+            addGameVersion(mc_version)
+            def displayVersion = getVersion('VERSION', mod_file)
+            if (System.getenv().BUILD_NUMBER) {
+                displayVersion += ".${System.getenv().BUILD_NUMBER}"
+            }
+            mainArtifact(jar) {
+                displayName = "$project.description $displayVersion"
+                relations {
+                    requiredLibrary 'mmd-orespawn'
+                    requiredLibrary 'base-metals'
+                    optionalLibrary 'additional-loot-tables'
+                }
+            }
+            addArtifact(sourceJar) {
+                displayName = "$project.description $displayVersion Sources"
+            }
+            addArtifact(deobfJar) {
+                displayName = "$project.description $displayVersion Development"
+            }
+            addArtifact(javadocJar) {
+                displayName = "$project.description $displayVersion Javadoc"
             }
         }
-//        addArtifact(apiJar) {
-//            displayName = "$project.description $displayVersion API"
-//        }
-        addArtifact(sourceJar) {
-            displayName = "$project.description $displayVersion Sources"
-        }
-        addArtifact(deobfJar) {
-            displayName = "$project.description $displayVersion Development"
-        }
-        addArtifact(javadocJar) {
-            displayName = "$project.description $displayVersion Javadoc"
-        }
-    }
-}
-
-sonarqube {
-    properties {
-        property 'sonar.host.url', secret.sonarHost
-        property 'sonar.organization', secret.sonarOrganization
-        property 'sonar.login', secret.sonarToken
-        property 'sonar.projectName', project.archivesBaseName
-        property 'sonar.projectKey', "$project.group:$project.archivesBaseName"
     }
 }
 

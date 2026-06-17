@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -120,7 +120,7 @@ public class DistillationRecipe {
 	public Collection<FluidStack> getValidInputs() {
 		LinkedList<FluidStack> l = new LinkedList<>();
 		for (Fluid f : FluidRegistry.getRegisteredFluids().values()) {
-			FluidStack stack = new FluidStack(f, FluidContainerRegistry.BUCKET_VOLUME);
+			FluidStack stack = new FluidStack(f, Fluid.BUCKET_VOLUME);
 			if (this.isValidInput(stack)) {
 				l.add(stack);
 			}

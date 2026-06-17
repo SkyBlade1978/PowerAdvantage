@@ -1,6 +1,6 @@
 [
 {
-  "modid": "poweradvantge",
+  "modid": "poweradvantage",
   "name": "Power Advantage",
   "description": "API for power DrCyano's power systems mods.",
   "version": "${version}",

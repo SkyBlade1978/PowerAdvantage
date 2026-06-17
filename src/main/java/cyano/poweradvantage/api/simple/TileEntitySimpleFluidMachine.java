@@ -6,6 +6,7 @@ import cyano.poweradvantage.api.PowerRequest;
 import cyano.poweradvantage.api.fluid.FluidPoweredEntity;
 import cyano.poweradvantage.api.fluid.FluidRequest;
 import com.mcmoddev.poweradvantage.init.Fluids;
+import com.mcmoddev.poweradvantage.util.FluidIdHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
@@ -61,8 +62,27 @@ public abstract class TileEntitySimpleFluidMachine extends FluidPoweredEntity im
 	 * the TileEntity in a way that gets the TileEntity's name (if in doubt, use the class name).
 	 */
 	public TileEntitySimpleFluidMachine(int fluidTankCapacity, String unlocalizedName){
-		this.tank = new FluidTank(fluidTankCapacity);
+		this.tank = new DirtyFluidTank(fluidTankCapacity);
 		this.unlocalizedName = unlocalizedName;
+	}
+
+	private class DirtyFluidTank extends FluidTank {
+		DirtyFluidTank(int capacity) {
+			super(capacity);
+		}
+
+		@Override
+		public void setFluid(FluidStack fluid) {
+			super.setFluid(fluid);
+			onContentsChanged();
+		}
+
+		@Override
+		protected void onContentsChanged() {
+			if (TileEntitySimpleFluidMachine.this.world != null && !TileEntitySimpleFluidMachine.this.world.isRemote) {
+				TileEntitySimpleFluidMachine.this.markDirty();
+			}
+		}
 	}
 
 	@Override
@@ -140,8 +160,11 @@ public abstract class TileEntitySimpleFluidMachine extends FluidPoweredEntity im
 		if(fluidVolume <= 0){
 			getTank().setFluid(new FluidStack(FluidRegistry.WATER,0));
 		} else {
-			FluidStack fs = new FluidStack(FluidRegistry.getFluid(fluidID),fluidVolume);
-			getTank().setFluid(fs);
+			Fluid fluid = FluidIdHelper.getFluid(fluidID);
+			if (fluid != null) {
+				FluidStack fs = new FluidStack(fluid,fluidVolume);
+				getTank().setFluid(fs);
+			}
 		}
 	}
 	
@@ -166,10 +189,10 @@ public abstract class TileEntitySimpleFluidMachine extends FluidPoweredEntity im
      */
 	public void prepareDataFieldsForSync(){
 		if(getTank().getFluid() == null || getTank().getFluidAmount() <= 0){
-			dataFields[DATAFIELD_FLUID_ID] = FluidRegistry.getFluidID(FluidRegistry.WATER);
+			dataFields[DATAFIELD_FLUID_ID] = FluidIdHelper.getFluidId(FluidRegistry.WATER);
 			dataFields[DATAFIELD_FLUID_VOLUME] = 0;
 		} else {
-			dataFields[DATAFIELD_FLUID_ID] = FluidRegistry.getFluidID(getTank().getFluid().getFluid());
+			dataFields[DATAFIELD_FLUID_ID] = FluidIdHelper.getFluidId(getTank().getFluid().getFluid());
 			dataFields[DATAFIELD_FLUID_VOLUME] = getTank().getFluidAmount();
 		}
 	}
@@ -255,12 +278,16 @@ public abstract class TileEntitySimpleFluidMachine extends FluidPoweredEntity im
         super.readFromNBT(tagRoot);
         ItemStack[] inventory = this.getInventory();
         if(inventory != null ){
+			for(int i = 0; i < inventory.length; i++){
+				inventory[i] = null;
+			}
 	        final NBTTagList nbttaglist = tagRoot.getTagList("Items", 10);
 	        for (int i = 0; i < nbttaglist.tagCount() && i < inventory.length; ++i) {
 	            final NBTTagCompound nbttagcompound1 = nbttaglist.getCompoundTagAt(i);
 	            final byte n = nbttagcompound1.getByte("Slot");
 	            if (n >= 0 && n < inventory.length) {
-	                inventory[n] = ItemStack.loadItemStackFromNBT(nbttagcompound1);
+	                ItemStack stack = new ItemStack(nbttagcompound1);
+	                inventory[n] = stack.isEmpty() ? null : stack;
 	            }
 	        }
         }
@@ -282,7 +309,7 @@ public abstract class TileEntitySimpleFluidMachine extends FluidPoweredEntity im
         if(inventory != null ){
 	        final NBTTagList nbttaglist = new NBTTagList();
 	        for (int i = 0; i < inventory.length; ++i) {
-	            if (inventory[i] != null) {
+	            if (inventory[i] != null && !inventory[i].isEmpty()) {
 	                final NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 	                nbttagcompound1.setByte("Slot", (byte)i);
 	                inventory[i].writeToNBT(nbttagcompound1);
@@ -381,6 +408,9 @@ private final ConduitType[] types = {Fluids.fluidConduit_general};
     	this.prepareDataFieldsForSync();
     	int[] dataFields = this.getDataFieldArray();
     	NBTTagCompound nbtTag = new NBTTagCompound();
+		NBTTagCompound tankTag = new NBTTagCompound();
+		getTank().writeToNBT(tankTag);
+		nbtTag.setTag("Tank", tankTag);
     	nbtTag.setIntArray("[]", dataFields);
     	return nbtTag;
     }
@@ -393,9 +423,17 @@ private final ConduitType[] types = {Fluids.fluidConduit_general};
      * <code>getDataFieldArray()</code> array
      */
     public void readDataFieldUpdateTag(NBTTagCompound tag){
-    	int[] newData = tag.getIntArray("[]");
-    	System.arraycopy(newData, 0, this.getDataFieldArray(), 0, Math.min(newData.length, this.getDataFieldArray().length));
-    	this.onDataFieldUpdate();
+		if (tag.hasKey("Tank", 10)) {
+			NBTTagCompound tankTag = tag.getCompoundTag("Tank");
+			getTank().readFromNBT(tankTag);
+			if (tankTag.hasKey("Empty")) {
+				getTank().setFluid(null);
+			}
+		} else if (tag.hasKey("[]", 11)) {
+			int[] newData = tag.getIntArray("[]");
+			System.arraycopy(newData, 0, this.getDataFieldArray(), 0, Math.min(newData.length, this.getDataFieldArray().length));
+			this.onDataFieldUpdate();
+		}
     }
     
     
@@ -407,6 +445,16 @@ private final ConduitType[] types = {Fluids.fluidConduit_general};
     	NBTTagCompound nbtTag = createDataFieldUpdateTag();
     	return new SPacketUpdateTileEntity(this.pos, 0, nbtTag);
     }
+
+	@Override
+	public NBTTagCompound getUpdateTag() {
+		return writeToNBT(new NBTTagCompound());
+	}
+
+	@Override
+	public void handleUpdateTag(NBTTagCompound tag) {
+		readFromNBT(tag);
+	}
 
     /**
      * Receives the network packet made by <code>getDescriptionPacket()</code>
@@ -427,6 +475,15 @@ private final ConduitType[] types = {Fluids.fluidConduit_general};
 			this.getInventory()[i] = null;
 		}
 		
+	}
+
+	@Override
+	public boolean isEmpty() {
+		if (this.getInventory() == null) return true;
+		for (ItemStack stack : this.getInventory()) {
+			if (stack != null && !stack.isEmpty()) return false;
+		}
+		return true;
 	}
 
 	
@@ -453,16 +510,16 @@ private final ConduitType[] types = {Fluids.fluidConduit_general};
 	 */
 	@Override
 	public ItemStack decrStackSize(int slot, int decrement) {
-		if (this.getInventory()[slot] == null) {
-            return null;
+		if (this.getInventory()[slot] == null || this.getInventory()[slot].isEmpty()) {
+            return ItemStack.EMPTY;
         }
-        if (this.getInventory()[slot].stackSize <= decrement) {
+        if (this.getInventory()[slot].getCount() <= decrement) {
             final ItemStack itemstack = this.getInventory()[slot];
             this.getInventory()[slot] = null;
             return itemstack;
         }
         final ItemStack itemstack = this.getInventory()[slot].splitStack(decrement);
-        if (this.getInventory()[slot].stackSize == 0) {
+        if (this.getInventory()[slot].isEmpty()) {
             this.getInventory()[slot] = null;
         }
         return itemstack;
@@ -536,9 +593,10 @@ private final ConduitType[] types = {Fluids.fluidConduit_general};
 	@Override
 	public ItemStack getStackInSlot(int slot) {
 		if(this.getInventory() != null){
-			return this.getInventory()[slot];
+			ItemStack stack = this.getInventory()[slot];
+			return stack == null ? ItemStack.EMPTY : stack;
 		} else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 	
@@ -552,9 +610,9 @@ private final ConduitType[] types = {Fluids.fluidConduit_general};
 		if(this.getInventory() != null){
 			ItemStack i = this.getInventory()[slot];
 			this.getInventory()[slot] = null;
-			return i;
+			return i == null ? ItemStack.EMPTY : i;
 		} else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 	
@@ -590,11 +648,12 @@ private final ConduitType[] types = {Fluids.fluidConduit_general};
 	@Override
 	public void setInventorySlotContents(int slot, ItemStack item) {
 		if(this.getInventory() == null) return;
-		final boolean flag = item != null && item.isItemEqual(this.getInventory()[slot]) 
-				&& ItemStack.areItemStackTagsEqual(item, this.getInventory()[slot]);
-		this.getInventory()[slot] = item;
-		if (item != null && item.stackSize > this.getInventoryStackLimit()) {
-			item.stackSize = this.getInventoryStackLimit();
+		ItemStack existing = this.getInventory()[slot];
+		final boolean flag = item != null && !item.isEmpty() && existing != null && !existing.isEmpty()
+				&& item.isItemEqual(existing) && ItemStack.areItemStackTagsEqual(item, existing);
+		this.getInventory()[slot] = (item == null || item.isEmpty()) ? null : item;
+		if (item != null && item.getCount() > this.getInventoryStackLimit()) {
+			item.setCount(this.getInventoryStackLimit());
 		}
 		if (slot == 0 && !flag) {
 			this.markDirty();

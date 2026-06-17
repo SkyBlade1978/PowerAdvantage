@@ -12,14 +12,16 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import com.mcmoddev.poweradvantage.util.FluidHandlerHelper;
 import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 
 @SuppressWarnings("deprecation")
 public class FluidDischargeTileEntity extends TileEntitySimpleFluidMachine {
 
 
 	public FluidDischargeTileEntity() {
-		super(FluidContainerRegistry.BUCKET_VOLUME, FluidDischargeTileEntity.class.getName());
+		super(Fluid.BUCKET_VOLUME, FluidDischargeTileEntity.class.getName());
 	}
 
 
@@ -33,30 +35,29 @@ public class FluidDischargeTileEntity extends TileEntitySimpleFluidMachine {
 		// push fluid to below
 		BlockPos space = this.pos.down();
 		// to fluid container
-		if (tank.getFluidAmount() > 0 && world.getTileEntity(space) instanceof IFluidHandler) {
-			IFluidHandler other = (IFluidHandler) world.getTileEntity(space);
-			FluidTankInfo[] tanks = other.getTankInfo(EnumFacing.DOWN);
-			for (int i = 0; i < tanks.length; i++) {
-				FluidTankInfo t = tanks[i];
-				if (t.fluid != null && tank.getFluid().getFluid() != t.fluid.getFluid()) {
+		IFluidHandler other = FluidHandlerHelper.getHandler(world.getTileEntity(space), EnumFacing.UP);
+		if (tank.getFluidAmount() > 0 && other != null) {
+			for (int i = 0; i < other.getTankProperties().length; i++) {
+				FluidStack otherFluid = other.getTankProperties()[i].getContents();
+				if (otherFluid != null && tank.getFluid().getFluid() != otherFluid.getFluid()) {
 					continue;
 				}
-				if (other.canFill(EnumFacing.UP, tank.getFluid().getFluid())) {
-					int amount = other.fill(EnumFacing.UP, tank.getFluid(), true);
+				if (other.getTankProperties()[i].canFill()) {
+					int amount = other.fill(tank.getFluid(), true);
 					tank.drain(amount, true);
 				}
 			}
 		} else
 			// place fluid block
-			if (tank.getFluidAmount() >= FluidContainerRegistry.BUCKET_VOLUME) {
+			if (tank.getFluidAmount() >= Fluid.BUCKET_VOLUME) {
 				FluidStack fstack = tank.getFluid();
 				Fluid fluid = fstack.getFluid();
 				Block fluidBlock = fluid.getBlock();
 				BlockPos coord = space;
 				if (world.isAirBlock(coord)) {
 					world.setBlockState(coord, fluidBlock.getDefaultState());
-					world.notifyBlockOfStateChange(coord, fluidBlock);
-					this.drain(EnumFacing.DOWN, FluidContainerRegistry.BUCKET_VOLUME, true);
+					world.notifyNeighborsOfStateChange(coord, fluidBlock, false);
+					this.drain(EnumFacing.DOWN, Fluid.BUCKET_VOLUME, true);
 				} else if (world.getBlockState(coord).getBlock() == fluidBlock) {
 					// follow the flow
 					coord = scanFluidSpaceForNonsourceBlock(getWorld(), coord, fluid, 32);
@@ -64,8 +65,8 @@ public class FluidDischargeTileEntity extends TileEntitySimpleFluidMachine {
 					if (coord != null) {
 						// not a source block
 						world.setBlockState(coord, fluidBlock.getDefaultState());
-						world.notifyBlockOfStateChange(coord, fluidBlock);
-						this.drain(EnumFacing.DOWN, FluidContainerRegistry.BUCKET_VOLUME, true);
+						world.notifyNeighborsOfStateChange(coord, fluidBlock, false);
+						this.drain(EnumFacing.DOWN, Fluid.BUCKET_VOLUME, true);
 					}
 				}
 

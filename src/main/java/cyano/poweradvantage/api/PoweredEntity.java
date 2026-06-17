@@ -127,6 +127,14 @@ public abstract class PoweredEntity extends TileEntity implements ITickable, IPo
 		return oldState.getBlock() != newSate.getBlock();
 	}
 
+	@Override
+	public void onLoad() {
+		super.onLoad();
+		if (this.world != null && !this.world.isRemote) {
+			ConduitRegistry.getInstance().conduitBlockPlacedEvent(this.world, this.world.provider.getDimension(), this.pos, this.getTypes());
+		}
+	}
+
 	/**
 	 * Method net.minecraft.server.gui.IUpdatePlayerListBox.update() is invoked
 	 * to do tick updates

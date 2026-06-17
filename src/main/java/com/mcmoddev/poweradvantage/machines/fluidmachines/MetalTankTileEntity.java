@@ -12,7 +12,7 @@ import net.minecraftforge.fluids.*;
 public class MetalTankTileEntity  extends TileEntitySimpleFluidMachine {
 
 	public MetalTankTileEntity() {
-		super(FluidContainerRegistry.BUCKET_VOLUME * 10, MetalTankTileEntity.class.getName());
+		super(Fluid.BUCKET_VOLUME * 10, MetalTankTileEntity.class.getName());
 	}
 
 
@@ -49,16 +49,7 @@ public class MetalTankTileEntity  extends TileEntitySimpleFluidMachine {
 	private FluidStack getFilter() {
 		ItemStack item = filterInventory[0];
 		if (item == null) return null;
-		if (item.getItem() instanceof UniversalBucket) {
-			UniversalBucket bucket = (UniversalBucket) item.getItem();
-			FluidStack drain = bucket.drain(item, bucket.getCapacity(item), false);
-			if (drain != null && drain.amount > 0) {
-				return drain;
-			} else {
-				return null;
-			}
-		}
-		return FluidContainerRegistry.getFluidForFilledItem(item);
+		return FluidUtil.getFluidContained(item);
 	}
 
 	/**
@@ -99,8 +90,7 @@ public class MetalTankTileEntity  extends TileEntitySimpleFluidMachine {
 		if (this.getInventory() == null) return false;
 		if (slot >= this.getInventory().length) return false;
 		if (item.getItem() == ForgeModContainer.getInstance().universalBucket) return true;
-		return FluidContainerRegistry.isFilledContainer(item)
-				&& FluidContainerRegistry.getFluidForFilledItem(item) != null;
+		return FluidUtil.getFluidContained(item) != null;
 	}
 
 	private Fluid lastFluid = null;

@@ -289,12 +289,14 @@ public abstract class TileEntitySimplePowerMachine extends PoweredEntity impleme
 		super.readFromNBT(tagRoot);
 		ItemStack[] inventory = this.getInventory();
 		if(inventory != null ){
+			Arrays.fill(inventory, null);
 			final NBTTagList nbttaglist = tagRoot.getTagList("Items", 10);
 			for (int i = 0; i < nbttaglist.tagCount() && i < inventory.length; ++i) {
 				final NBTTagCompound nbttagcompound1 = nbttaglist.getCompoundTagAt(i);
 				final byte n = nbttagcompound1.getByte("Slot");
 				if (n >= 0 && n < inventory.length) {
-					inventory[n] = ItemStack.loadItemStackFromNBT(nbttagcompound1);
+					ItemStack stack = new ItemStack(nbttagcompound1);
+					inventory[n] = stack.isEmpty() ? null : stack;
 				}
 			}
 		}
@@ -316,7 +318,7 @@ public abstract class TileEntitySimplePowerMachine extends PoweredEntity impleme
 		if(inventory != null ){
 			final NBTTagList nbttaglist = new NBTTagList();
 			for (int i = 0; i < inventory.length; ++i) {
-				if (inventory[i] != null) {
+				if (inventory[i] != null && !inventory[i].isEmpty()) {
 					final NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 					nbttagcompound1.setByte("Slot", (byte)i);
 					inventory[i].writeToNBT(nbttagcompound1);
@@ -447,6 +449,15 @@ public abstract class TileEntitySimplePowerMachine extends PoweredEntity impleme
 		
 	}
 
+	@Override
+	public boolean isEmpty() {
+		if (this.getInventory() == null) return true;
+		for (ItemStack stack : this.getInventory()) {
+			if (stack != null && !stack.isEmpty()) return false;
+		}
+		return true;
+	}
+
 	
 	/**
 	 * executes when a player right-clicks and opens the inventory GUI
@@ -471,16 +482,16 @@ public abstract class TileEntitySimplePowerMachine extends PoweredEntity impleme
 	 */
 	@Override
 	public ItemStack decrStackSize(int slot, int decrement) {
-		if (this.getInventory()[slot] == null) {
-			return null;
+		if (this.getInventory()[slot] == null || this.getInventory()[slot].isEmpty()) {
+			return ItemStack.EMPTY;
 		}
-		if (this.getInventory()[slot].stackSize <= decrement) {
+		if (this.getInventory()[slot].getCount() <= decrement) {
 			final ItemStack itemstack = this.getInventory()[slot];
 			this.getInventory()[slot] = null;
 			return itemstack;
 		}
 		final ItemStack itemstack = this.getInventory()[slot].splitStack(decrement);
-		if (this.getInventory()[slot].stackSize == 0) {
+		if (this.getInventory()[slot].isEmpty()) {
 			this.getInventory()[slot] = null;
 		}
 		return itemstack;
@@ -555,9 +566,10 @@ public abstract class TileEntitySimplePowerMachine extends PoweredEntity impleme
 	@Override
 	public ItemStack getStackInSlot(int slot) {
 		if(this.getInventory() != null){
-			return this.getInventory()[slot];
+			ItemStack stack = this.getInventory()[slot];
+			return stack == null ? ItemStack.EMPTY : stack;
 		} else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 	
@@ -571,9 +583,9 @@ public abstract class TileEntitySimplePowerMachine extends PoweredEntity impleme
 		if(this.getInventory() != null){
 			ItemStack i = this.getInventory()[slot];
 			this.getInventory()[slot] = null;
-			return i;
+			return i == null ? ItemStack.EMPTY : i;
 		} else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 	
@@ -608,11 +620,12 @@ public abstract class TileEntitySimplePowerMachine extends PoweredEntity impleme
 	@Override
 	public void setInventorySlotContents(int slot, ItemStack item) {
 		if(this.getInventory() == null) return;
-		final boolean flag = item != null && item.isItemEqual(this.getInventory()[slot]) 
-				&& ItemStack.areItemStackTagsEqual(item, this.getInventory()[slot]);
-		this.getInventory()[slot] = item;
-		if (item != null && item.stackSize > this.getInventoryStackLimit()) {
-			item.stackSize = this.getInventoryStackLimit();
+		ItemStack existing = this.getInventory()[slot];
+		final boolean flag = item != null && !item.isEmpty() && existing != null && !existing.isEmpty()
+				&& item.isItemEqual(existing) && ItemStack.areItemStackTagsEqual(item, existing);
+		this.getInventory()[slot] = (item == null || item.isEmpty()) ? null : item;
+		if (item != null && item.getCount() > this.getInventoryStackLimit()) {
+			item.setCount(this.getInventoryStackLimit());
 		}
 		if (slot == 0 && !flag) {
 			this.markDirty();

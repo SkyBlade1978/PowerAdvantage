@@ -224,7 +224,7 @@ public abstract class BlockSimplePowerConduit extends ConduitBlock {
 	public void addCollisionBoxToList(
 			final IBlockState bs, final World world, final BlockPos coord,
 			final AxisAlignedBB box, final List<AxisAlignedBB> collisionBoxList,
-			final Entity entity
+			final Entity entity, final boolean isActualState
 	) {
 		IBlockState oldBS = bs;
 		final boolean connectNorth = this.canConnectTo(world, coord, oldBS, EnumFacing.NORTH, coord.north());

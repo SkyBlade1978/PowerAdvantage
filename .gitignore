@@ -5,12 +5,22 @@
 *.classpath
 *.project
 *.prefs
+.metadata/
 *.launch
 /output
 
 # Local agent notes
+/AGENT.md
 /AGENTS.md
 /agent-notes/
+.agent/
+.agents/
+.codex/
+.claude/
+CLAUDE.md
+.aider*
+.cursor/
+.cursorrules
 
 #ForgeGradle
 /build

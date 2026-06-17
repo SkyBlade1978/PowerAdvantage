@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.registry.GameData;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -197,7 +197,7 @@ allprojects {
 
 dependencies {
     compile files(
-        'lib/PowerAdvantage-API-2.4.1.jar'
+        'lib/PowerAdvantage-API-x.y.z.jar'
     )
 
 }
@@ -213,7 +213,7 @@ dependencies {
  *
  */
 @Mod(modid = PowerAdvantage.MODID, version = PowerAdvantage.VERSION, name=PowerAdvantage.NAME, dependencies = "after:basemetals",
-		acceptedMinecraftVersions = "[1.10.2,)")
+		acceptedMinecraftVersions = "[1.12.2]")
 public class PowerAdvantage
 {
 	/** The identifier for this mod */
@@ -273,6 +273,7 @@ public class PowerAdvantage
 	{
 		FMLLog.info("%s: loading config file", MODID);
 		instance = this;
+		com.mcmoddev.poweradvantage.init.Entities.registerDataFixers();
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
 		String[] presets = {"NORMAL", "TECH_PROGRESSION", "APOCALYPTIC"};
@@ -550,8 +551,8 @@ public class PowerAdvantage
 	@SuppressWarnings("deprecation")
 	private Map<String, Set<Block>> sortBlocksByModID() {
 		Map<String, Set<Block>> modMap = new HashMap<>();
-		GameData.getBlockRegistry().forEach((Block b)->{
-			final String modid = GameData.getBlockRegistry().getNameForObject(b).getResourceDomain();
+		ForgeRegistries.BLOCKS.forEach((Block b)->{
+			final String modid = ForgeRegistries.BLOCKS.getKey(b).getResourceDomain();
 			modMap.computeIfAbsent(modid, (String id)->new HashSet<Block>());
 			modMap.get(modid).add(b);
 		});
@@ -562,10 +563,10 @@ public class PowerAdvantage
 	private void printHackingInfo() {
 		try {
 			// Object dump all blocks and class dump all tile entities
-			GameData.getBlockRegistry().forEach((Block b) -> {
+			ForgeRegistries.BLOCKS.forEach((Block b) -> {
 				FMLLog.info("Block: %s %s", b.getUnlocalizedName(), objectDump(b));
 			});
-			GameData.getItemRegistry().forEach((Item i) -> {
+			ForgeRegistries.ITEMS.forEach((Item i) -> {
 				FMLLog.info("Item: %s %s", i.getUnlocalizedName(), objectDump(i));
 			});
 			FMLLog.info("class TileEntity: %s", superDump(null, TileEntity.class));

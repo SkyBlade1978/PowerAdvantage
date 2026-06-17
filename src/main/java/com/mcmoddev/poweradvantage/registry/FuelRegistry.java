@@ -154,8 +154,8 @@ public class FuelRegistry implements IFuelHandler{
 		if(fuelItem == null) return null;
 		List<Function<ItemStack, ItemStack>> list = FuelRegistry.getInstance().getPostBurnAlgorithmsForItem(fuelItem.getItem());
 		if(list.isEmpty()){
-			fuelItem.stackSize--;
-			if(fuelItem.stackSize == 0){
+			fuelItem.shrink(1);
+			if(fuelItem.isEmpty()){
 				fuelItem = fuelItem.getItem().getContainerItem(fuelItem);
 			}
 		} else {

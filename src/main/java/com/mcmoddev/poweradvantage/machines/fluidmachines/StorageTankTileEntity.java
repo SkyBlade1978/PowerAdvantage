@@ -5,14 +5,14 @@ import cyano.poweradvantage.api.fluid.FluidRequest;
 import cyano.poweradvantage.api.simple.TileEntitySimpleFluidMachine;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
 @SuppressWarnings("deprecation")
 public class StorageTankTileEntity  extends TileEntitySimpleFluidMachine {
 
 	public StorageTankTileEntity() {
-		super(FluidContainerRegistry.BUCKET_VOLUME * 4, StorageTankTileEntity.class.getName());
+		super(Fluid.BUCKET_VOLUME * 4, StorageTankTileEntity.class.getName());
 	}
 
 	/**
