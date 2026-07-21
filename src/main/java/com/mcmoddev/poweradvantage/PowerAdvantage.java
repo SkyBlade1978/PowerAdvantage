@@ -197,7 +197,7 @@ allprojects {
 
 dependencies {
     compile files(
-        'lib/PowerAdvantage-API-2.4.1.jar'
+        'lib/PowerAdvantage-API-x.y.z.jar'
     )
 
 }
