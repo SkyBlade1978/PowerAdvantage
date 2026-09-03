@@ -178,36 +178,14 @@ import java.util.*;
  * Note that to make a mod that uses the PowerAdvantage API, you will need to make a few 
  * adjustments to add the appropriate dependancies.
  * </p><p>
- * First, you need to add the required libraries to your project. Create a folder in your project
- * called <b>lib</b>. Then grab the PowerAdvantage API .jar file and put it in the <b>lib</b>
- * folder. It will also be helpful to put the javadoc .zip file in this folder as well.
+ * First, add the PowerAdvantage deobfuscated development jar or published Maven artifact to the
+ * compile classpath. Do not embed PowerAdvantage in the dependent mod.
  * </p><p>
  * Next, you need to specify the dependencies in the &#64;mod annotation. For example:<br>
  * <code>@Mod(modid = MyMod.MODID, version = MyMod.VERSION, name=MyMod.NAME, dependencies = "required-after:poweradvantage")</code>
  * </p><p>
- * After that, you need to update your gradle build script to include the dependencies. Add the 
- * following to <b>build.gradle</b> (adjusting the version numbers on the .jar filenames as 
- * neessary):<br><code>
-
-allprojects {
-    apply plugin: 'java'
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-}
-
-dependencies {
-    compile files(
-        'lib/PowerAdvantage-API-x.y.z.jar'
-    )
-
-}
-</code><br>This is necessary to include the API in your compile build path and also specify that you 
- * are compiling with Java 7 (Java 6 will not work). 
- * </p><p>
- * Finally, you need to add the API .jar files to your IDE project configuration. In Eclipse, 
- * right-click on your project and go to <i>Properties</i>, then click on <i>Java Build Path</i> and 
- * click on the <i>Libraries</i> tab. Then click <i>Add Jars...</i> and select the PowerAdvantage
- * API jar in your <b>lib</b> folder and close the window by clicking OK.
+ * Gradle or Eclipse should then derive its compile classpath from that declared dependency. The
+ * Minecraft 1.10.2 build targets Java 8.
  * </p>
  * @author DrCyano
  *
@@ -220,8 +198,8 @@ public class PowerAdvantage
 	public static final String MODID = "poweradvantage";
 	/** The display name for this mod */
 	public static final String NAME = "Power Advantage";
-	/** The version of this mod, in the format major.minor.update */
-	public static final String VERSION = "2.4.1";
+	/** The version of this mod, in the format major.minor.patch.target */
+	public static final String VERSION = "2.4.1.110021";
 	
 
 
