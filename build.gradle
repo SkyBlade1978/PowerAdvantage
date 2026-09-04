@@ -765,6 +765,42 @@ tasks.register('isolateEclipseProductionRuns') {
                         '  <booleanAttribute key="org.eclipse.jdt.launching.ATTR_EXCLUDE_TEST_CODE" value="true"/>'
                 contents = contents.replace(marker, attribute + '\n' + marker)
             }
+
+            // Buildship exposes compileOnly dependencies through its project
+            // container. Replace that container in production launches with
+            // Gradle's actual runtime classpath so API-only jars cannot be
+            // discovered by FML as installed mods.
+            Set<File> mainOutputs = sourceSets.main.output.files.collect {
+                it.canonicalFile
+            } as Set<File>
+            List<File> productionRuntime = configurations.runtimeClasspath.files.collect {
+                it.canonicalFile
+            }.findAll { File runtimeFile ->
+                !mainOutputs.contains(runtimeFile)
+            }.sort { File left, File right ->
+                left.canonicalPath <=> right.canonicalPath
+            }
+            List<String> launchLines = contents.readLines()
+            int buildshipContainerLine = launchLines.findIndexOf {
+                it.contains('org.eclipse.buildship.core.gradleclasspathcontainer')
+            }
+            if (buildshipContainerLine < 0) {
+                throw new GradleException("${name} is missing the Buildship classpath container")
+            }
+            List<String> runtimeEntries = productionRuntime.collect { File runtimeFile ->
+                String escapedPath = runtimeFile.canonicalPath
+                        .replace('&', '&amp;amp;')
+                        .replace('<', '&amp;lt;')
+                        .replace('>', '&amp;gt;')
+                ('    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; '
+                        + 'standalone=&quot;no&quot;?&gt;&lt;runtimeClasspathEntry externalArchive=&quot;'
+                        + escapedPath
+                        + '&quot; type=&quot;2&quot; path=&quot;5&quot; /&gt;"/>')
+            }
+            launchLines.remove(buildshipContainerLine)
+            launchLines.addAll(buildshipContainerLine, runtimeEntries)
+            contents = launchLines.join('\n') + '\n'
+
             ['--cache', '--metadata', '--to-srg', '--to-obf'].each { option ->
                 String prefix = option + ' '
                 int valueStart = contents.indexOf(prefix)
@@ -823,6 +859,18 @@ tasks.register('verifyEclipseProductionClasspath') {
             if (!contents.contains('PROJECT_ATTR" value="PowerAdvantage"')) {
                 throw new GradleException("${name} targets the wrong Eclipse project")
             }
+            if (contents.contains('org.eclipse.buildship.core.gradleclasspathcontainer')) {
+                throw new GradleException("${name} exposes compileOnly dependencies at runtime")
+            }
+            ['RF-API.jar', 'RebornCore-1.12.2'].each { forbiddenDependency ->
+                if (contents.toLowerCase(Locale.ROOT).contains(forbiddenDependency.toLowerCase(Locale.ROOT))) {
+                    throw new GradleException(
+                            "${name} includes compile-only dependency ${forbiddenDependency}")
+                }
+            }
+            if (!contents.contains("forge-${project.minecraft_version}-${project.forge_version}")) {
+                throw new GradleException("${name} is missing the Forge development runtime")
+            }
             if (contents.contains('${MC_VERSION}')
                     || !contents.contains(
                     "key=\"MC_VERSION\" value=\"${project.minecraft_version}\"")) {
@@ -832,6 +880,67 @@ tasks.register('verifyEclipseProductionClasspath') {
     }
 }
 
+tasks.register('verifyModelAssets') {
+    group = 'verification'
+    description = 'Verifies that PowerAdvantage model references resolve to packaged assets.'
+    File resourceRoot = file('src/main/resources')
+    File modelRoot = new File(resourceRoot, "assets/${project.mod_id}/models")
+    File blockstateRoot = new File(resourceRoot, "assets/${project.mod_id}/blockstates")
+    inputs.dir(modelRoot)
+    inputs.dir(blockstateRoot)
+
+    doLast {
+        def verifyReference = { String reference, String assetType, String sourcePath ->
+            if (reference.startsWith('#')) return
+            int separator = reference.indexOf(':')
+            String namespace = separator >= 0 ? reference.substring(0, separator) : 'minecraft'
+            String path = separator >= 0 ? reference.substring(separator + 1) : reference
+            if (namespace != project.mod_id) return
+
+            File target = new File(resourceRoot,
+                    "assets/${namespace}/${assetType}/${path}.json")
+            if (assetType == 'textures') {
+                target = new File(resourceRoot, "assets/${namespace}/textures/${path}.png")
+            }
+            if (!target.isFile()) {
+                throw new GradleException(
+                        "${sourcePath} references missing ${assetType} asset ${reference}")
+            }
+        }
+
+        fileTree(modelRoot) { include '**/*.json' }.files.sort().each { File modelFile ->
+            def model = new JsonSlurper().parse(modelFile)
+            if (model.parent instanceof String) {
+                verifyReference(model.parent, 'models', modelFile.path)
+            }
+            if (model.textures instanceof Map) {
+                model.textures.values().findAll { it instanceof String }.each { String texture ->
+                    verifyReference(texture, 'textures', modelFile.path)
+                }
+            }
+        }
+
+        Closure verifyBlockstateModels
+        verifyBlockstateModels = { Object node, String sourcePath ->
+            if (node instanceof Map) {
+                node.each { key, value ->
+                    if (key == 'model' && value instanceof String) {
+                        verifyReference(value, 'models/block', sourcePath)
+                    } else {
+                        verifyBlockstateModels(value, sourcePath)
+                    }
+                }
+            } else if (node instanceof Collection) {
+                node.each { verifyBlockstateModels(it, sourcePath) }
+            }
+        }
+        fileTree(blockstateRoot) { include '**/*.json' }.files.sort().each { File blockstateFile ->
+            verifyBlockstateModels(new JsonSlurper().parse(blockstateFile), blockstateFile.path)
+        }
+    }
+}
+
 tasks.named('check') {
     dependsOn tasks.named('verifyReleaseConfiguration')
+    dependsOn tasks.named('verifyModelAssets')
 }
