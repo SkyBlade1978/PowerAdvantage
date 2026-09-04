@@ -87,7 +87,7 @@ public abstract class ModSupport {
 
 	@SuppressWarnings("deprecation")
 	private static Block addBlock(Block block, String name) {
-		block.setUnlocalizedName(PowerAdvantage.MODID + "." + name);
+		block.setTranslationKey(PowerAdvantage.MODID + "." + name);
 		ResourceLocation registryName = new ResourceLocation(PowerAdvantage.MODID, name);
 		block.setRegistryName(registryName);
 		ForgeRegistries.BLOCKS.register(block);

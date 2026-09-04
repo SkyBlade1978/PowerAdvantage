@@ -221,7 +221,7 @@ public class PowerAdvantage
 	/** The display name for this mod */
 	public static final String NAME = "Power Advantage";
 	/** The version of this mod, in the format major.minor.update */
-	public static final String VERSION = "2.4.1";
+	public static final String VERSION = "2.4.1.112021";
 	
 
 
@@ -552,7 +552,7 @@ public class PowerAdvantage
 	private Map<String, Set<Block>> sortBlocksByModID() {
 		Map<String, Set<Block>> modMap = new HashMap<>();
 		ForgeRegistries.BLOCKS.forEach((Block b)->{
-			final String modid = ForgeRegistries.BLOCKS.getKey(b).getResourceDomain();
+			final String modid = ForgeRegistries.BLOCKS.getKey(b).getNamespace();
 			modMap.computeIfAbsent(modid, (String id)->new HashSet<Block>());
 			modMap.get(modid).add(b);
 		});
@@ -564,10 +564,10 @@ public class PowerAdvantage
 		try {
 			// Object dump all blocks and class dump all tile entities
 			ForgeRegistries.BLOCKS.forEach((Block b) -> {
-				FMLLog.info("Block: %s %s", b.getUnlocalizedName(), objectDump(b));
+				FMLLog.info("Block: %s %s", b.getTranslationKey(), objectDump(b));
 			});
 			ForgeRegistries.ITEMS.forEach((Item i) -> {
-				FMLLog.info("Item: %s %s", i.getUnlocalizedName(), objectDump(i));
+				FMLLog.info("Item: %s %s", i.getTranslationKey(), objectDump(i));
 			});
 			FMLLog.info("class TileEntity: %s", superDump(null, TileEntity.class));
 			try {
