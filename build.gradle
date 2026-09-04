@@ -777,8 +777,6 @@ tasks.register('isolateEclipseProductionRuns') {
                 it.canonicalFile
             }.findAll { File runtimeFile ->
                 !mainOutputs.contains(runtimeFile)
-            }.sort { File left, File right ->
-                left.canonicalPath <=> right.canonicalPath
             }
             List<String> launchLines = contents.readLines()
             int buildshipContainerLine = launchLines.findIndexOf {
@@ -870,6 +868,19 @@ tasks.register('verifyEclipseProductionClasspath') {
             }
             if (!contents.contains("forge-${project.minecraft_version}-${project.forge_version}")) {
                 throw new GradleException("${name} is missing the Forge development runtime")
+            }
+            List<String> bootstrapArtifacts = [
+                    "forge-${project.minecraft_version}-${project.forge_version}",
+                    "client-extra-${project.minecraft_version}",
+                    "mappings_${project.mapping_channel}-${project.minecraft_version}"
+            ]
+            List<Integer> bootstrapPositions = bootstrapArtifacts.collect { artifact ->
+                contents.indexOf(artifact)
+            }
+            if (bootstrapPositions.any { it < 0 }
+                    || bootstrapPositions != bootstrapPositions.sort(false)) {
+                throw new GradleException(
+                        "${name} does not preserve the Forge bootstrap classpath order")
             }
             if (contents.contains('${MC_VERSION}')
                     || !contents.contains(
