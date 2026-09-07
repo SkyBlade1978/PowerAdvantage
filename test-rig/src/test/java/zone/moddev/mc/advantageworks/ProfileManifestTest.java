@@ -32,7 +32,7 @@ public class ProfileManifestTest {
                 profile = new JsonParser().parse(reader).getAsJsonObject();
             }
             assertTrue(file.getName(), profileNames.add(text(profile, "name")));
-            assertEquals("18e5192b73c6768208c1d5c5687ea230ed470bc6", text(profile, "sourceCommit"));
+            assertEquals("2443eaae7c666b8d54a5c9c30091892b79e80994", text(profile, "sourceCommit"));
             assertEquals("2.4.3.110021", text(profile, "sourceVersion"));
             recipeModes.add(text(profile, "recipeMode"));
 
