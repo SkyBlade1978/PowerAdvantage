@@ -2,6 +2,14 @@
 
 Power Advantage provides shared power, fluid, and item transport systems for its Minecraft 1.10.2 expansion mods.
 
+The maintained implementation namespace is `zone.moddev.mc.poweradvantage`. The legacy
+`cyano.poweradvantage.api` package remains the supported add-on API.
+
+External fluid producers can offer fluid to an adjacent Power Advantage pipe through
+`cyano.poweradvantage.api.fluid.FluidNetworkApi.offerFluid(...)`. The method reports the exact
+accepted amount without draining the caller's tank, allowing optional integrations to remain in
+control of their own fluid state.
+
 The [Advantage Works 1.10.2 Handbook](docs/1.10/README.md) documents every machine and component across Power, Steam, and Electric Advantage, including commissioning layouts and known investigation points. The [MMD material and fluid compatibility specification](docs/1.10/mmd-material-fluid-compatibility.md) defines OreSpawn ownership, legacy migration, crude-oil aliases, and Ore Dictionary names.
 
 The source-controlled [Advantage Works test rig](test-rig/README.md) turns those commissioning cards into a disposable, walkable Forge server world with repeatable save/restart checkpoints. It is a separate test mod and is never packaged with PowerAdvantage.

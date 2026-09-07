@@ -66,7 +66,7 @@
 - **Historical wording:** DrCyano's refined-oil page describes contact as poisonous, but does not name Minecraft's `poison` potion effect.
 - **Implemented behaviour:** Maintained code applies the `nausea` potion effect for 200 ticks (10 seconds). Crude oil applies Slowness III for the same duration.
 - **Original-release evidence:** The compiled callback in `PowerAdvantage_1.10.2-2.3.0.jar` also constructs the `nausea` potion effect for 200 ticks. The inspected fixture has SHA-256 `47CD509C1141095BFE1C8C7DD689C2ECD3F99C89195E34A88CC9E0B5FC12413E`.
-- **Source:** Original release `cyano.poweradvantage.init.Blocks.lambda$init$0`; maintained `src/main/java/com/mcmoddev/poweradvantage/init/Blocks.java:117-122`; historical Power Advantage fluid documentation.
+- **Source:** Original release `cyano.poweradvantage.init.Blocks.lambda$init$0`; maintained `src/main/java/zone/moddev/mc/poweradvantage/init/Blocks.java:117-122`; historical Power Advantage fluid documentation.
 - **Disposition:** Closed as not a maintained-code regression. Interpret the historical word "poisonous" as descriptive wording rather than proof that the Minecraft Poison effect was intended. Do not change gameplay on this evidence.
 - **Optional characterization:** A contained survival-contact test may still document the visible Nausea effect, but it is not a defect test.
 

@@ -8,7 +8,7 @@
   "stationRunSeconds": 5,
   "recipeMode": "NORMAL",
   "sourceCommit": "18e5192b73c6768208c1d5c5687ea230ed470bc6",
-  "sourceVersion": "2.4.2.110021",
+  "sourceVersion": "2.4.3.110021",
   "forge": {
     "version": "1.10.2-12.18.3.2511",
     "installerPath": ".cache/forge-1.10.2-12.18.3.2511-installer.jar",
@@ -25,9 +25,9 @@
     },
     {
       "id": "poweradvantage",
-      "version": "2.4.2.110021",
-      "file": "PowerAdvantage-2.4.2.110021.jar",
-      "path": "../build/libs/PowerAdvantage-2.4.2.110021.jar",
+      "version": "2.4.3.110021",
+      "file": "PowerAdvantage-2.4.3.110021.jar",
+      "path": "../build/libs/PowerAdvantage-2.4.3.110021.jar",
       "sha256": "BA4E1006E3C5D269B701AC6BC2A5072111EE79A4E8D34F201B5A296635F1696D"
     },
     {

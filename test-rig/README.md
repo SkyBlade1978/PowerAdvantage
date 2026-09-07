@@ -2,7 +2,7 @@
 
 > **Commissioning notice:** This harness builds disposable works. It is not a gameplay mod, registers no content, and must never be shipped inside a PowerAdvantage jar.
 
-The rig turns the 20 cards in the [Advantage Works handbook](../docs/1.10/README.md) into one walkable superflat server world. Power Works lies west of the central concourse, Steam Works north, Electric Works east, and the drill, lift, turbine, pumping, musket, and turret proving grounds south.
+The rig turns the 20 cards in the [Advantage Works handbook](../docs/1.10/README.md) plus a public-API fixture into one walkable superflat server world. Power Works lies west of the central concourse, Steam Works north, Electric Works east, and the drill, lift, turbine, pumping, musket, and turret proving grounds south.
 
 ## Safety interlocks
 
@@ -30,7 +30,7 @@ Every bay has clickable start, stop, reset, and check signs plus a wool status l
 
 Before a player uses the clickable controls, grant that tester operator permission with `op <player>` at the server console. The harness intentionally keeps `/advworks` at permission level 2 as a second interlock beyond the marked disposable world.
 
-The definition at `src/main/resources/assets/advantageworkstest/works/works-1.10.2.json` owns station origins, bounds, placements, setup/start/stop actions, assertions, required mods, and manual checks. Station IDs are the handbook card IDs `W-01` through `E-08`.
+The definition at `src/main/resources/assets/advantageworkstest/works/works-1.10.2.json` owns station origins, bounds, placements, setup/start/stop actions, assertions, required mods, and manual checks. Station IDs are the handbook card IDs `W-01` through `E-08`, plus `P-API-01` for the stable fluid-network API.
 
 ## Result meanings
 
@@ -101,6 +101,7 @@ ADVANTAGE_WORKS_GRADLE_JAVA_HOME=<Java 17 home, when the runner itself is launch
 | District | Cards |
 | --- | --- |
 | Power Works | `W-01` fluid persistence; `W-02` drain/discharge reach; `W-03` distillation; `W-04` conveyors and all filters |
+| Power API Works | `P-API-01` public fluid offer, transfer limit, full consumer, invalid target, and input immutability |
 | Steam Works | `S-01` boilers; `S-02` topology; `S-03` storage/scarcity; `S-04` furnace/crusher/still |
 | South proving grounds | `S-05` drill; `S-06` pump; `S-07` elevator; `S-08` musket; `E-01` generators/turbine; `E-06` drill; `E-07` light/turret |
 | Electric Works | `E-02` batteries/distribution; `E-03` processors; `E-04` fluids; `E-05` growth; `E-08` isolated assembler diagnostic |
@@ -126,4 +127,4 @@ The sampler records block counts, sampled biome centers, any deposit-producing c
 
 ## Release isolation
 
-`verifyHarnessIsolation` opens the PowerAdvantage release jar and rejects any `com/mcmoddev/advantageworks` class or `assets/advantageworkstest` resource. The normal PowerAdvantage build never includes the nested `test-rig` source set.
+`verifyHarnessIsolation` opens the PowerAdvantage release jar and rejects any `zone/moddev/mc/advantageworks` class or `assets/advantageworkstest` resource. The normal PowerAdvantage build never includes the nested `test-rig` source set.
