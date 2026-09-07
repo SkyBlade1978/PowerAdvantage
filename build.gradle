@@ -164,6 +164,18 @@ repositories {
 def rfApiJar = file('libs/RF-API.jar')
 def rebornCoreCoordinate = "curse.maven:reborncore-${project.reborncore_curse_project_id}:" \
         + project.reborncore_curse_file_id
+// OreSpawn is a required runtime mod, but its API is supplied as a local deobf jar
+// so development and CI do not depend on a historical Maven repository.
+def defaultOreSpawnDeobfJar = file("../../../MinecraftMineralogy/OS110/OreSpawn/build/libs-dev/" \
+        + "OreSpawn-${project.orespawn_version}-deobf.jar")
+def oreSpawnDeobfJar = providers.gradleProperty('oreSpawnDeobfJar')
+        .map { file(it) }
+        .getOrElse(defaultOreSpawnDeobfJar)
+if (!oreSpawnDeobfJar.isFile()) {
+    throw new GradleException("Missing OreSpawn deobf jar: ${oreSpawnDeobfJar}. "
+            + "Build pinned OreSpawn commit ${project.orespawn_source_commit} first, or pass "
+            + "-PoreSpawnDeobfJar=<path>.")
+}
 
 dependencies {
     implementation minecraft.dependency(
@@ -175,6 +187,10 @@ dependencies {
     // but do not package or launch PowerAdvantage with the provider mods.
     compileOnly files(rfApiJar)
     compileOnly rebornCoreCoordinate
+    compileOnly files(oreSpawnDeobfJar)
+    runtimeOnly files(oreSpawnDeobfJar)
+    testImplementation files(oreSpawnDeobfJar)
+    testImplementation 'junit:junit:4.13.2'
 }
 
 tasks.named('processResources', ProcessResources) {
@@ -276,7 +292,7 @@ tasks.register('verifyReleaseConfiguration') {
     group = 'verification'
     description = 'Validates release identity, target metadata, and optional integration policy.'
     doLast {
-        if (project.mod_version != '2.4.1.110021') {
+        if (project.mod_version != '2.4.2.110021') {
             throw new GradleException("Unexpected PowerAdvantage release version: ${project.mod_version}")
         }
         if (project.minecraft_version != '1.10.2'
@@ -308,12 +324,25 @@ tasks.register('verifyReleaseConfiguration') {
                 || project.reborncore_sha256 != 'C7C0D57FFC65B056D3795EBF60912EF5C6333009F33FAEEDA804BE4C22626C99') {
             throw new GradleException('Unexpected RebornCore compile API identity')
         }
+        if (project.orespawn_version != '4.0.8.110021'
+                || project.orespawn_source_repository != 'MinecraftModDevelopmentMods/OreSpawn'
+                || project.orespawn_source_commit != '5a50df1158e948c8db55814e819090b34c12d765'
+                || project.orespawn_deobf_sha256 != '33BFB8C9D626D071147A0952A74B633F0BCC6A27E0408B4524370F4833B003C2') {
+            throw new GradleException('Unexpected OreSpawn API dependency identity')
+        }
+        ['.github/workflows/ci.yml', '.github/workflows/codeql-analysis.yml'].each { workflowPath ->
+            String workflow = file(workflowPath).getText('UTF-8')
+            if (!workflow.contains('repository: ' + project.orespawn_source_repository)
+                    || !workflow.contains('ref: ' + project.orespawn_source_commit)) {
+                throw new GradleException("${workflowPath} does not build the pinned OreSpawn source")
+            }
+        }
         String mainSource = file(
                 'src/main/java/com/mcmoddev/poweradvantage/PowerAdvantage.java').getText('UTF-8')
         if (!mainSource.contains('MODID = "poweradvantage"')
-                || !mainSource.contains('VERSION = "2.4.1.110021"')
-                || !mainSource.contains('dependencies = "after:basemetals"')) {
-            throw new GradleException('PowerAdvantage source identity or optional BaseMetals policy changed')
+                || !mainSource.contains('VERSION = "2.4.2.110021"')
+                || !mainSource.contains('required-after:orespawn@[4.0.6,5.0.0);after:basemetals')) {
+            throw new GradleException('PowerAdvantage source identity or dependency policy changed')
         }
         if (!file('src/main/java/cyano/poweradvantage/api/PoweredEntity.java').isFile()) {
             throw new GradleException('Legacy cyano.poweradvantage.api compatibility surface is missing')
@@ -338,6 +367,20 @@ tasks.register('verifyReleaseDependencies') {
                 .digest(rfApiJar.bytes).encodeHex().toString().toUpperCase()
         if (actualRfHash != project.rf_api_sha256) {
             throw new GradleException("RF API SHA-256 is ${actualRfHash}, expected ${project.rf_api_sha256}")
+        }
+        String actualOreSpawnHash = MessageDigest.getInstance('SHA-256')
+                .digest(oreSpawnDeobfJar.bytes).encodeHex().toString().toUpperCase()
+        if (actualOreSpawnHash != project.orespawn_deobf_sha256) {
+            throw new GradleException("OreSpawn SHA-256 is ${actualOreSpawnHash}, expected "
+                    + project.orespawn_deobf_sha256)
+        }
+        new ZipFile(oreSpawnDeobfJar).withCloseable { zip ->
+            ['zone/moddev/mc/orespawn/api/OreSpawnApi.class',
+             'zone/moddev/mc/orespawn/api/WorldgenProvider.class'].each { required ->
+                if (zip.getEntry(required) == null) {
+                    throw new GradleException("OreSpawn API jar is missing ${required}")
+                }
+            }
         }
 
         def compileArtifacts = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts
@@ -371,18 +414,21 @@ tasks.register('verifyReleaseDependencies') {
 
         Set<File> compileFiles = configurations.compileClasspath.files.collect { it.canonicalFile } as Set<File>
         if (!compileFiles.contains(rfApiJar.canonicalFile)
-                || !compileFiles.contains(rebornCoreJar.canonicalFile)) {
-            throw new GradleException('Optional RF or RebornCore API is missing from compileClasspath')
+                || !compileFiles.contains(rebornCoreJar.canonicalFile)
+                || !compileFiles.contains(oreSpawnDeobfJar.canonicalFile)) {
+            throw new GradleException('A required compile API is missing from compileClasspath')
         }
         Set<File> runtimeFiles = configurations.runtimeClasspath.files.collect { it.canonicalFile } as Set<File>
         if (runtimeFiles.contains(rfApiJar.canonicalFile)
                 || runtimeFiles.contains(rebornCoreJar.canonicalFile)) {
             throw new GradleException('Optional RF or RebornCore API leaked onto runtimeClasspath')
         }
+        if (!runtimeFiles.contains(oreSpawnDeobfJar.canonicalFile)) {
+            throw new GradleException('Required OreSpawn mod is missing from development runtimeClasspath')
+        }
         List<String> forbiddenRuntimeMods = runtimeFiles.collect { it.name.toLowerCase(Locale.ROOT) }
                 .findAll { name ->
-                    name.contains('basemetals') || name.contains('orespawn')
-                            || name.contains('tesla') || name.contains('reborncore')
+                    name.contains('basemetals') || name.contains('tesla') || name.contains('reborncore')
                 }
         if (!forbiddenRuntimeMods.isEmpty()) {
             throw new GradleException("Optional mods leaked onto runtimeClasspath: ${forbiddenRuntimeMods}")
@@ -438,6 +484,7 @@ tasks.register('verifyReleaseArtifacts') {
             }
             ['agent-notes/', '.codex/', 'src/test/', 'com/mcmoddev/advantageworks/',
              'assets/advantageworkstest/', 'cofh/api/', 'reborncore/api/',
+             'zone/moddev/mc/orespawn/', 'com/mcmoddev/orespawn/',
              'net/minecraft/', 'net/minecraftforge/'].each { forbidden ->
                 if (names.any { it.contains(forbidden) }) {
                     throw new GradleException("Release jar contains forbidden entry matching ${forbidden}")

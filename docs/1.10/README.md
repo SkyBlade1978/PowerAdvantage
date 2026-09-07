@@ -16,6 +16,7 @@ This handbook serves two audiences at once. A player should be able to build and
 | [Commissioning and Fault Finding](commissioning-and-fault-finding.md) | Exact test rigs, expected observations, restart checks, and endurance trials |
 | [Technical Ledger](technical-ledger.md) | Registry names, rates, capacities, formulae, recipes, NBT, configuration, and source references |
 | [Inspector's Register of Possible Legacy Bugs](possible-legacy-bugs.md) | Intent-versus-code discrepancies waiting for gameplay investigation |
+| [MMD Material And Fluid Compatibility](mmd-material-fluid-compatibility.md) | OreSpawn ownership, migration authority, crude-oil aliases, and Ore Dictionary standards |
 | [Advantage Works test rig](../../test-rig/README.md) | Source-controlled generator and runner for the 20 commissioning cards |
 
 ## Edition authority

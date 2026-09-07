@@ -56,9 +56,9 @@ flowchart LR
 
 - **Purpose:** Burn configured liquid fuel and water to produce steam.
 - **Connections/capacities:** Steam and general-fluid buffers 1,000 each; separate water and fuel tanks of 4,000 mB each.
-- **Operation:** Fuel is processed in 100 mB portions. Default configured values are `oil=5000` and `fuel=25000`; accepted names and burn values are configuration data, not visual fluid names.
+- **Operation:** Fuel is processed in 100 mB portions. Explicit `fluid_fuel_values` entries take precedence. Otherwise `crude_oil`, `mineralogy_crude_oil`, and legacy `oil` burn equally at 5,000 ticks per bucket. The configured generic `fuel` default remains 25,000.
 - **Persistence:** `WaterTank`, `FuelTank`, `BurnTime`, `BurnTimeTotal`, and steam should survive reload.
-- **Troubleshooting:** Inspect the registry name reported by the fluid and the `fluid_fuel_values` setting. "Oil" supplied under another name will not match by appearance alone.
+- **Troubleshooting:** Inspect the registry name and `fluid_fuel_values`. Unlisted names can be appended to Power Advantage's crude-oil category; appearance alone never establishes compatibility.
 
 ![Historical line of Steam Advantage machines and pipework](assets/historical/steamadvantage-machine-line.png)
 

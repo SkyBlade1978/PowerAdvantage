@@ -79,7 +79,7 @@ flowchart LR
 
 - **Construction:** Two buckets and a pipe over a furnace.
 - **Connections:** Input and output tanks are each 1,000 mB. Use separate pipe arrangements or containers so output cannot return to an incompatible input.
-- **Operation:** The default recipe is `2*crude_oil -> 1*refined_oil`; configuration may replace or extend the list. Work advances at one recipe unit per game tick while fuel and valid fluid are present.
+- **Operation:** The default duty is `2*crude -> 1*refined_oil`. Registered aliases `crude_oil`, `mineralogy_crude_oil`, and legacy `oil` each receive that ratio unless an explicit recipe already handles the input. Configuration may replace or extend the list. Work advances at one recipe unit per game tick while fuel and valid fluid are present.
 - **Controls and GUI:** GUI shows both tanks, burn state, and progress. Solid fuel is inserted in the fuel slot.
 - **Automation:** Fluid faces expose tank handling; solid-fuel insertion and container handling should be checked against the intended face in the test rig.
 - **Persistence:** Input, output, burn time, inventory, and progress are expected to survive reload.
@@ -104,7 +104,8 @@ flowchart LR
 | Sprocket, `poweradvantage:sprocket` | Common mechanical ingredient. Ore names `sprocket`, `gear`, `sprocketSteel`, and `gearSteel`. |
 | Rotation tool, `poweradvantage:rotator_tool` | Right-click orientable works blocks to cycle their facing. Recheck connections after rotation. |
 | Steel frame, `poweradvantage:steel_frame` | Structural machine ingredient and drill-track component. Ore name `frameSteel`. |
-| Crude oil, registry fluid `crude_oil` | Distillation feed and configurable liquid fuel. Contact applies Slowness III for 10 seconds. Default furnace value 5 ticks/mB, or 5,000 ticks per bucket. |
+| Power crude oil, registry fluid crude_oil | Distillation feed and liquid fuel. Contact applies Slowness III for 10 seconds. Default value 5 ticks/mB, or 5,000 ticks per bucket. Its large covered deposits occur beneath desert biomes. |
+| Mineralogy crude oil, registry fluid mineralogy_crude_oil | A distinct fluid and block identity accepted by Advantage distillation and oil boilers at the same rates. Mineralogy places its deposits beneath ocean biomes. |
 | Refined oil, registry fluid `refined_oil` | Distillation product and better liquid fuel. Default furnace value 25 ticks/mB, or 25,000 ticks per bucket. Original and maintained 1.10 code apply Nausea for 10 seconds on contact. |
 
 **Historical note:** The wiki describes refined-oil contact as poisoning, but the original `2.3.0` release applies Minecraft's Nausea effect. Treat "poisoning" as descriptive wording, not a requirement for the specific Poison effect; inspector finding `PA-110-001` is closed.

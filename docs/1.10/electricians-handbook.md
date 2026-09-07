@@ -52,7 +52,7 @@ Battery charge persists in item NBT key `energy`. The battery array accepts eigh
 | Registry item/block | Works use and ore-dictionary names |
 | --- | --- |
 | `li_ore` | Lithium ore, `oreLithium`; smelts to one lithium ingot and crushes to two lithium powder. |
-| `sulfur_ore` | Sulfur ore, `oreSulfur`; drops sulfur material and crushes to four sulfur powder. |
+| `sulfur_ore` | Sulfur ore, `oreSulfur` and `oreSulphur`; drops sulfur material and crushes to four sulfur powder. |
 | `li_ingot` / `li_powder` / `li_nugget` | Lithium progression; `ingotLithium`, `dustLithium`, `nuggetLithium`. |
 | `sulfur_powder` | `sulfur`, `dustSulfur`, `sulphur`, and `dustSulphur`. |
 | `silicon_mix` / `silicon_ingot` | Sand plus carbon dust, then smelting; ingot names `ingotSilicon` and `silicon`. |
@@ -61,7 +61,9 @@ Battery charge persists in item NBT key `energy`. The battery array accepts eigh
 | `control_circuit` | Blank board plus microchip and solder; ore name `circuitBoard`. |
 | `integrated_circuit` | Silicon/redstone/metal-nugget component; ore name `microchip`. |
 | `psu` | Power-supply unit; ore name `PSU`. |
-| `petrolplastic_ingot` | Refinery output; ore names `plastic` and `ingotPlastic`. |
+| petrolplastic_ingot | Refinery output; ore names plastic and ingotPlastic. |
+
+ElectricAdvantage always contributes complete editable OreSpawn rules for sulfur and lithium. On fresh profiles its sulfur rule is enabled only when neither Mineralogy nor BaseMinerals is present; its lithium rule is enabled only when BaseMinerals is absent. Existing world/profile choices remain authoritative.
 
 ## Generation house
 

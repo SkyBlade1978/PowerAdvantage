@@ -340,7 +340,8 @@ Photovoltaic recipe outside `APOCALYPTIC`: `ggg/sss/wuw`, `g=paneGlass`, `s=ingo
 | `options.recipe_mode` | `NORMAL`; allowed `NORMAL`, `TECH_PROGRESSION`, `APOCALYPTIC` |
 | `options.treasure_chest_loot_factor` | 0.5, range 0..1000 |
 | `options.plastic_equals_rubber` | true |
-| `recipes.distiller_recipes` | `2*crude_oil->1*refined_oil` in maintained naming |
+| ecipes.distiller_recipes | 2*crude_oil->1*refined_oil; registered crude aliases receive the same 2:1 duty unless explicitly handled |
+| compatibility.additional_crude_oil_fluid_aliases | Empty; appends semicolon-delimited registry names to built-ins crude_oil, mineralogy_crude_oil, and oil |
 | `Other Power Mods.use_other_fluids` | false |
 | `Other Power Mods.RF_conversions` | `steam=8;electricity=0.25;quantum=8` RF per PA unit |
 | `Other Power Mods.TechReborn_conversions` | `electricity=0.25` EU per PA unit |
@@ -361,7 +362,7 @@ Photovoltaic recipe outside `APOCALYPTIC`: `ggg/sss/wuw`, `g=paneGlass`, `s=ingo
 | `fabricator.recursion_limit` | 5, range 1..255 |
 | `options.laser_sound` | `block.note.bass` |
 | `options.petrolplastic_fluids` | `refined_oil;oil` |
-| Generated OreSpawn config | `config/orespawn/electricadvantage.json` |
+| OreSpawn provider | Typed schema-4 API rules `electricadvantage:ore/sulfur` and `electricadvantage:ore/lithium`; historical `config/orespawn/electricadvantage.json` is import-only authority |
 
 ## Persistence ledger
 

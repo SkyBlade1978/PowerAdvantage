@@ -2,13 +2,15 @@
 
 Power Advantage provides shared power, fluid, and item transport systems for its Minecraft 1.10.2 expansion mods.
 
-The [Advantage Works 1.10.2 Handbook](docs/1.10/README.md) documents every machine and component across Power, Steam, and Electric Advantage, including commissioning layouts and known investigation points.
+The [Advantage Works 1.10.2 Handbook](docs/1.10/README.md) documents every machine and component across Power, Steam, and Electric Advantage, including commissioning layouts and known investigation points. The [MMD material and fluid compatibility specification](docs/1.10/mmd-material-fluid-compatibility.md) defines OreSpawn ownership, legacy migration, crude-oil aliases, and Ore Dictionary names.
 
 The source-controlled [Advantage Works test rig](test-rig/README.md) turns those commissioning cards into a disposable, walkable Forge server world with repeatable save/restart checkpoints. It is a separate test mod and is never packaged with PowerAdvantage.
 
 ## Building Minecraft 1.10.2
 
 The `master-1.10.2` build uses ForgeGradle 7.0.34 and Gradle 9.6.1. Run Gradle with Java 17; Gradle resolves the Java 8 toolchain used for compilation.
+
+Build the pinned OreSpawn commit `5a50df1158e948c8db55814e819090b34c12d765` first, or pass its deobf jar with `-PoreSpawnDeobfJar=<path>`.
 
 ```text
 gradlew.bat clean check build verifyReleaseDependencies verifyReleaseArtifacts writeReleaseChecksums
@@ -22,4 +24,4 @@ For Eclipse, import the repository as an existing Gradle project and run:
 gradlew.bat cleanEclipse verifyEclipseProductionClasspath
 ```
 
-Base Metals and OreSpawn remain required distribution dependencies but are deliberately absent from the compile classpath. Optional RF and RebornCore integrations compile against pinned API inputs and are not bundled.
+Base Metals remains a required distribution dependency and is absent from the compile classpath. OreSpawn is a required runtime dependency whose pinned public API is used at compile time; it is never bundled. Optional RF and RebornCore integrations compile against pinned API inputs and are not bundled.
