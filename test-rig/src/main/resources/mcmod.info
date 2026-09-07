@@ -1,0 +1,15 @@
+[
+  {
+    "modid": "advantageworkstest",
+    "name": "Advantage Works Test Harness",
+    "description": "Server-side commissioning harness for the Advantage family. Not for distribution.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/MinecraftModDevelopmentMods/PowerAdvantage",
+    "authorList": ["Minecraft Mod Development"],
+    "credits": "Test specifications derived from DrCyano's Advantage documentation and maintained source.",
+    "requiredMods": [],
+    "dependencies": ["poweradvantage"],
+    "dependants": []
+  }
+]

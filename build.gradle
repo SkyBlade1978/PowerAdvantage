@@ -436,7 +436,8 @@ tasks.register('verifyReleaseArtifacts') {
                     throw new GradleException("Release jar is missing ${required}")
                 }
             }
-            ['agent-notes/', '.codex/', 'src/test/', 'cofh/api/', 'reborncore/api/',
+            ['agent-notes/', '.codex/', 'src/test/', 'com/mcmoddev/advantageworks/',
+             'assets/advantageworkstest/', 'cofh/api/', 'reborncore/api/',
              'net/minecraft/', 'net/minecraftforge/'].each { forbidden ->
                 if (names.any { it.contains(forbidden) }) {
                     throw new GradleException("Release jar contains forbidden entry matching ${forbidden}")

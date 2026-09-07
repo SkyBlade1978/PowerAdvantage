@@ -1,0 +1,62 @@
+{
+  "name": "packaged-current",
+  "mode": "packaged",
+  "runtimeBase": "../run-advantage-works",
+  "serverPort": 25565,
+  "startupTimeoutSeconds": 180,
+  "shutdownTimeoutSeconds": 60,
+  "stationRunSeconds": 5,
+  "recipeMode": "NORMAL",
+  "sourceCommit": "6958ed2dfdd745ebc1f614a32072765af061fe8e",
+  "sourceVersion": "2.4.1.110021",
+  "forge": {
+    "version": "1.10.2-12.18.3.2511",
+    "installerPath": ".cache/forge-1.10.2-12.18.3.2511-installer.jar",
+    "url": "https://maven.minecraftforge.net/net/minecraftforge/forge/1.10.2-12.18.3.2511/forge-1.10.2-12.18.3.2511-installer.jar",
+    "sha256": "664393C5A924B8F06CFB953903ABCF9FE5E99ECBE6AF8C7EA217339C766E519C"
+  },
+  "mods": [
+    {
+      "id": "advantageworkstest",
+      "version": "1.0.0.110020",
+      "file": "AdvantageWorksTestHarness-1.0.0.110020.jar",
+      "path": "build/libs/AdvantageWorksTestHarness-1.0.0.110020.jar",
+      "workspaceProduced": true
+    },
+    {
+      "id": "poweradvantage",
+      "version": "2.4.1.110021",
+      "file": "PowerAdvantage-2.4.1.110021.jar",
+      "path": "../build/libs/PowerAdvantage-2.4.1.110021.jar",
+      "sha256": "07D1BF0EBEF9882C89E64BBCE3A4D1170E0BD85EFE552AD02D367E55C7F9A174"
+    },
+    {
+      "id": "steamadvantage",
+      "version": "2.2.2.110021",
+      "file": "SteamAdvantage-2.2.2.110021.jar",
+      "path": "../../SteamAdvantage/SteamAdvantage/build/libs/SteamAdvantage-2.2.2.110021.jar",
+      "sha256": "C87F24CF61CB5A5F05B7DA0D9E2C538D77DDE21D665A07D5C1CA64AF912BC3F8"
+    },
+    {
+      "id": "electricadvantage",
+      "version": "2.2.2.110021",
+      "file": "ElectricAdvantage-2.2.2.110021.jar",
+      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs/ElectricAdvantage-2.2.2.110021.jar",
+      "sha256": "0E21D309E5FCDF91836008277C4A861F89E699C219A3B2FA634C871B90E91D43"
+    },
+    {
+      "id": "basemetals",
+      "version": "2.5.0-beta4",
+      "file": "BaseMetals-1.10.2-2.5.0-beta4.238.jar",
+      "path": "${env:ADVANTAGE_WORKS_CURRENT_MODS}/BaseMetals-1.10.2-2.5.0-beta4.238.jar",
+      "sha256": "51F04770C316E62D9ED3EF713144F02FA2EC899645813627091365E12F61C3EF"
+    },
+    {
+      "id": "orespawn",
+      "version": "3.2.2",
+      "file": "OreSpawn-1.10.2-3.2.2.104.jar",
+      "path": "${env:ADVANTAGE_WORKS_CURRENT_MODS}/OreSpawn-1.10.2-3.2.2.104.jar",
+      "sha256": "D964148C20175E16CCEFAB02AE43A181A50DC08A1D636A77E59CFE8C8EA8D41A"
+    }
+  ]
+}

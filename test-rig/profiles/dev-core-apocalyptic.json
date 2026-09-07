@@ -1,0 +1,36 @@
+{
+  "name": "dev-core-apocalyptic",
+  "mode": "development",
+  "runtimeBase": "../run-advantage-works",
+  "serverPort": 25565,
+  "startupTimeoutSeconds": 180,
+  "shutdownTimeoutSeconds": 60,
+  "stationRunSeconds": 5,
+  "recipeMode": "APOCALYPTIC",
+  "sourceCommit": "6958ed2dfdd745ebc1f614a32072765af061fe8e",
+  "sourceVersion": "2.4.1.110021",
+  "lifecycleStations": [],
+  "mods": [
+    {
+      "id": "advantageworkstest",
+      "version": "1.0.0.110020",
+      "file": "AdvantageWorksTestHarness-1.0.0.110020-deobf.jar",
+      "path": "build/libs-dev/AdvantageWorksTestHarness-1.0.0.110020-deobf.jar",
+      "workspaceProduced": true
+    },
+    {
+      "id": "steamadvantage",
+      "version": "2.2.2.110021",
+      "file": "SteamAdvantage-2.2.2.110021-deobf.jar",
+      "path": "../../SteamAdvantage/SteamAdvantage/build/libs-dev/SteamAdvantage-2.2.2.110021-deobf.jar",
+      "sha256": "1F6787CA78DCCB7BA6223C14C9A37FCF8F65FA693C49066CF2F0EB8F53DBC005"
+    },
+    {
+      "id": "electricadvantage",
+      "version": "2.2.2.110021",
+      "file": "ElectricAdvantage-2.2.2.110021-deobf.jar",
+      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs-dev/ElectricAdvantage-2.2.2.110021-deobf.jar",
+      "sha256": "D1BF08D489DC5AE46AD58311FFFC0F76A39F9CB559A522C046FAC777A984F2F9"
+    }
+  ]
+}
