@@ -40,6 +40,11 @@ import java.util.zip.ZipFile;
 /** Owns disposable runtime directories and complete server-process restarts. */
 public final class WorksRunner {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final List<String> DEFAULT_LIFECYCLE_STATIONS = Arrays.asList(
+            "W-01", "W-02", "W-03", "W-04",
+            "S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08",
+            "E-01", "E-02", "E-03", "E-04", "E-05", "E-06", "E-07", "E-08",
+            "P-API-01");
 
     private WorksRunner() {
     }
@@ -67,6 +72,8 @@ public final class WorksRunner {
         if ("packaged".equals(profile.mode)) preparePackagedServer(testRig, runtime, profile);
         List<String> lifecycleStations = arguments.lifecycleStations == null
                 ? profile.lifecycleStations : arguments.lifecycleStations;
+        boolean selectedLifecycle = arguments.lifecycleStations != null
+                || !DEFAULT_LIFECYCLE_STATIONS.equals(lifecycleStations);
         int stationRunSeconds = arguments.stationRunSeconds == null
                 ? profile.stationRunSeconds : arguments.stationRunSeconds;
         writeRunManifest(runtime, profile, staged, arguments.automated,
@@ -89,7 +96,7 @@ public final class WorksRunner {
                     send(first, "advworks checkpoint " + station + " before-restart");
                     send(first, "advworks stop " + station);
                 }
-                send(first, "advworks check all");
+                checkStations(first, lifecycleStations, selectedLifecycle);
             }
             if (profile.worldgenSampleRadius > 0) {
                 Thread.sleep(stationRunSeconds * 1000L);
@@ -119,7 +126,7 @@ public final class WorksRunner {
                 for (String station : lifecycleStations) {
                     send(second, "advworks checkpoint " + station + " after-restart");
                 }
-                send(second, "advworks check all");
+                checkStations(second, lifecycleStations, selectedLifecycle);
             }
             if (profile.worldgenSampleRadius > 0) {
                 send(second, "advworks sample-worldgen " + profile.worldgenSampleRadius);
@@ -140,7 +147,13 @@ public final class WorksRunner {
             requireProfileAssertions(runtime, results, profile, "restart-run",
                     profile.restartProfileAssertions);
             requireFileAssertions(runtime, results, "restart-run", profile.restartFileAssertions);
-            if (profile.buildWorks) requireAcceptableSummary(new File(results, "all-summary.json"));
+            if (profile.buildWorks) {
+                if (!selectedLifecycle) {
+                    requireAcceptableSummary(new File(results, "all-summary.json"));
+                } else {
+                    requireAcceptableStations(results, lifecycleStations);
+                }
+            }
             System.out.println("Automated Advantage Works run complete: " + results);
             return;
         }
@@ -790,6 +803,30 @@ public final class WorksRunner {
         }
     }
 
+    private static void checkStations(Process process, List<String> stations, boolean selected) throws Exception {
+        if (!selected) {
+            send(process, "advworks check all");
+            return;
+        }
+        for (String station : stations) send(process, "advworks check " + station);
+    }
+
+    private static void requireAcceptableStations(File results, List<String> stations) throws Exception {
+        for (String station : stations) {
+            File result = new File(results, station + "-latest.json");
+            if (!result.isFile()) throw new IllegalStateException("Missing final station result " + result);
+            try (InputStreamReader reader = new InputStreamReader(
+                    new FileInputStream(result), StandardCharsets.UTF_8)) {
+                JsonObject root = GSON.fromJson(reader, JsonObject.class);
+                String status = root.has("status") ? root.get("status").getAsString() : "";
+                if ("FAIL".equals(status) || "UNEXPECTED_PASS".equals(status)) {
+                    throw new IllegalStateException("Final Advantage Works station result is not acceptable: "
+                            + station + "=" + status);
+                }
+            }
+        }
+    }
+
     private static String timestamp() {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss");
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -867,10 +904,7 @@ public final class WorksRunner {
         List<FileAssertion> firstFileAssertions = new ArrayList<>();
         List<FileAssertion> restartFileAssertions = new ArrayList<>();
         WorldgenExpectations worldgenExpectations = new WorldgenExpectations();
-        List<String> lifecycleStations = Arrays.asList(
-                "W-01", "W-02", "W-03", "W-04",
-                "S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08",
-                "E-01", "E-02", "E-03", "E-04", "E-05", "E-06", "E-07", "E-08");
+        List<String> lifecycleStations = DEFAULT_LIFECYCLE_STATIONS;
     }
 
     private static final class ModInput {
