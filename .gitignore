@@ -25,6 +25,15 @@
 /classes/
 /logs/
 /mcmodsrepo/
+/test-rig/.cache/
+/test-rig/.gradle/
+/test-rig/build/
+/test-rig/logs/
+/test-rig/run/
+/test-rig/staged/
+/test-rig/local.properties
+/run-advantage-works/
+/advantage-works-results/
 
 # Machine-specific agent context
 /AGENTS.md
@@ -38,6 +47,17 @@
 /CLAUDE.md
 /agent-*.md
 /codex-*.md
+**/AGENTS.md
+**/AGENT.md
+**/agent-notes/
+**/.agent/
+**/.agents/
+**/.codex/
+**/.claude/
+**/.gemini/
+**/CLAUDE.md
+**/agent-*.md
+**/codex-*.md
 
 # Local verification and profiling evidence
 /run-*/

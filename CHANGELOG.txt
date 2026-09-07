@@ -1,3 +1,10 @@
+Power Advantage 2.4.2.110021
+
+- Register a typed OreSpawn 4 provider for large covered crude-oil deposits in Forge `SANDY` biomes, excluding beaches and mesas.
+- Preserve imported legacy OreSpawn settings and established world profiles as player authority.
+- Add the public crude-oil fluid category with Power, Mineralogy, legacy, and configurable aliases.
+- Distil and fuel from every registered crude-oil alias without renaming either mod's fluid.
+- Pin and audit OreSpawn's public API without embedding OreSpawn classes.
 Power Advantage 2.4.1.110021
 
 - Move the Minecraft 1.10.2 build to ForgeGradle 7 and Gradle 9.6.1.

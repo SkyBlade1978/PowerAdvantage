@@ -1,11 +1,14 @@
 package com.mcmoddev.poweradvantage.init;
 
 import com.mcmoddev.poweradvantage.PowerAdvantage;
+import cyano.poweradvantage.api.FluidCategoryRegistry;
 import com.mcmoddev.poweradvantage.RecipeMode;
 import com.mcmoddev.poweradvantage.compat.BaseMetalsCompat;
 import com.mcmoddev.poweradvantage.registry.still.recipe.DistillationRecipeRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -100,6 +103,19 @@ public abstract class Recipes {
 
 
 		initDone = true;
+	}
+
+	public static void initCrudeOilAliasDistillationRecipes() {
+		Fluid refinedOil = FluidRegistry.getFluid("refined_oil");
+		if (refinedOil == null) return;
+		for (String alias : FluidCategoryRegistry.getAliases(FluidCategoryRegistry.CRUDE_OIL)) {
+			Fluid input = FluidRegistry.getFluid(alias);
+			if (input != null && DistillationRecipeRegistry.getInstance()
+					.getDistillationRecipeForFluid(input) == null) {
+				DistillationRecipeRegistry.addDistillationRecipe(alias, 2, refinedOil.getName(), 1);
+			}
+		}
+		DistillationRecipeRegistry.clearRecipeCache();
 	}
 
 	public static void initDistillationRecipes(String[] distillRecipes) {

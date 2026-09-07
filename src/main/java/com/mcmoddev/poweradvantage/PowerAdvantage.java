@@ -1,7 +1,7 @@
 package com.mcmoddev.poweradvantage;
 
 import cyano.poweradvantage.api.ConduitType;
-import com.mcmoddev.poweradvantage.init.WorldGen;
+import cyano.poweradvantage.api.FluidCategoryRegistry;
 import com.mcmoddev.poweradvantage.registry.FuelRegistry;
 import com.mcmoddev.poweradvantage.registry.MachineGUIRegistry;
 import com.mcmoddev.poweradvantage.registry.still.recipe.DistillationRecipeRegistry;
@@ -25,15 +25,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 // NOTE: other mods dependant on this one need to add the following to their @Mod annotation:
@@ -190,7 +185,7 @@ import java.util.*;
  * @author DrCyano
  *
  */
-@Mod(modid = PowerAdvantage.MODID, version = PowerAdvantage.VERSION, name=PowerAdvantage.NAME, dependencies = "after:basemetals",
+@Mod(modid = PowerAdvantage.MODID, version = PowerAdvantage.VERSION, name=PowerAdvantage.NAME, dependencies = "required-after:orespawn@[4.0.6,5.0.0);after:basemetals",
 		acceptedMinecraftVersions = "[1.10.2,)")
 public class PowerAdvantage
 {
@@ -199,7 +194,7 @@ public class PowerAdvantage
 	/** The display name for this mod */
 	public static final String NAME = "Power Advantage";
 	/** The version of this mod, in the format major.minor.patch.target */
-	public static final String VERSION = "2.4.1.110021";
+	public static final String VERSION = "2.4.2.110021";
 	
 
 
@@ -290,6 +285,12 @@ public class PowerAdvantage
 		plasticIsAlsoRubber = config.getBoolean("plastic_equals_rubber", "options", plasticIsAlsoRubber, 
 				"If true, then plastic will be useable in recipes as if it were rubber (for cross-mod compatibility)");
 
+		String additionalCrudeOilAliases = config.getString("additional_crude_oil_fluid_aliases", "compatibility", "",
+				"Optional semi-colon delimited fluid registry names to treat as crude oil. Built-in aliases are always retained.");
+		for (String alias : additionalCrudeOilAliases.split(";")) {
+			if (!alias.trim().isEmpty()) FluidCategoryRegistry.registerAlias(FluidCategoryRegistry.CRUDE_OIL, alias);
+		}
+
 		String distillerRecipeConfig = config.getString("distiller_recipes", "recipes",
 				DEFAULT_DISTILLER_RECIPES,
 				  "List of distiller recipes in the format of #*name1->#*name2 where # is an \n"
@@ -353,24 +354,12 @@ public class PowerAdvantage
 
 		config.save();
 
-		FMLLog.info("%s: creating orespawn file (if it doesn't already exist)", MODID);
-		
-		Path orespawnFolder = Paths.get(event.getSuggestedConfigurationFile().toPath().getParent().toString(),"orespawn");
-		Path orespawnFile = Paths.get(orespawnFolder.toString(),MODID+".json");
-		if(!Files.exists(orespawnFile)){
-			try{
-				Files.createDirectories(orespawnFile.getParent());
-				Files.write(orespawnFile, Arrays.asList(WorldGen.ORESPAWN_FILE_CONTENTS.split("\n")), Charset.forName("UTF-8"));
-			} catch (IOException e) {
-				FMLLog.severe(MODID+": Error: Failed to write file "+orespawnFile);
-			}
-		}
-
-
 		FMLLog.info("%s: initializing fluids, blocks, items, and loot tables", MODID);
 		com.mcmoddev.poweradvantage.init.Fluids.init(); 
 		com.mcmoddev.poweradvantage.init.Blocks.init();
 		com.mcmoddev.poweradvantage.init.Items.init();
+		com.mcmoddev.poweradvantage.init.OreSpawnWorldGen.register(
+				event.getSuggestedConfigurationFile().toPath().getParent());
 		com.mcmoddev.poweradvantage.init.TreasureChests.init(event.getSuggestedConfigurationFile().toPath().getParent());
 
 		// keep this next comment, it is useful for finding Vanilla recipes
@@ -434,6 +423,7 @@ public class PowerAdvantage
 		com.mcmoddev.poweradvantage.init.Entities.init();
 		com.mcmoddev.poweradvantage.init.Recipes.init();
 		com.mcmoddev.poweradvantage.init.Recipes.initDistillationRecipes(distillRecipes);
+		com.mcmoddev.poweradvantage.init.Recipes.initCrudeOilAliasDistillationRecipes();
 		com.mcmoddev.poweradvantage.init.Villages.init(); 
 		com.mcmoddev.poweradvantage.init.GUI.init();
 

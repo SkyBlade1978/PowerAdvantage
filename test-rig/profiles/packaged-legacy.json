@@ -1,0 +1,63 @@
+{
+  "name": "packaged-legacy",
+  "mode": "packaged",
+  "runtimeBase": "../run-advantage-works",
+  "serverPort": 25565,
+  "startupTimeoutSeconds": 180,
+  "shutdownTimeoutSeconds": 60,
+  "stationRunSeconds": 5,
+  "recipeMode": "NORMAL",
+  "sourceCommit": "18e5192b73c6768208c1d5c5687ea230ed470bc6",
+  "sourceVersion": "2.4.2.110021",
+  "forge": {
+    "version": "1.10.2-12.18.3.2511",
+    "installerPath": ".cache/forge-1.10.2-12.18.3.2511-installer.jar",
+    "url": "https://maven.minecraftforge.net/net/minecraftforge/forge/1.10.2-12.18.3.2511/forge-1.10.2-12.18.3.2511-installer.jar",
+    "sha256": "664393C5A924B8F06CFB953903ABCF9FE5E99ECBE6AF8C7EA217339C766E519C"
+  },
+  "mods": [
+    {
+      "id": "advantageworkstest",
+      "version": "1.0.0.110020",
+      "file": "AdvantageWorksTestHarness-1.0.0.110020.jar",
+      "path": "build/libs/AdvantageWorksTestHarness-1.0.0.110020.jar",
+      "workspaceProduced": true
+    },
+    {
+      "id": "poweradvantage",
+      "version": "2.4.2.110021",
+      "file": "PowerAdvantage-2.4.2.110021.jar",
+      "path": "../build/libs/PowerAdvantage-2.4.2.110021.jar",
+      "sha256": "BA4E1006E3C5D269B701AC6BC2A5072111EE79A4E8D34F201B5A296635F1696D"
+    },
+    {
+      "id": "steamadvantage",
+      "version": "2.2.3.110021",
+      "file": "SteamAdvantage-2.2.3.110021.jar",
+      "path": "../../SteamAdvantage/SteamAdvantage/build/libs/SteamAdvantage-2.2.3.110021.jar",
+      "sha256": "C94B55D813D939FB5679BCD5EED4672BE75491F0D2975A40C1393AABEFBABE4C"
+    },
+    {
+      "id": "electricadvantage",
+      "version": "2.2.3.110021",
+      "file": "ElectricAdvantage-2.2.3.110021.jar",
+      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs/ElectricAdvantage-2.2.3.110021.jar",
+      "sha256": "643C6754165694187BDB6D8D3A1DAD0A9B25106F4711DFE60F57FCDE4D6B0F48"
+    },
+    {
+      "id": "basemetals",
+      "version": "2.4.0.11",
+      "file": "BaseMetals_1.10.2-2.4.0.11.jar",
+      "path": "../../../_deps/BaseMetals-v2.4.0/build/libs/BaseMetals_1.10.2-2.4.0.11.jar",
+      "sha256": "A225D3E24CD37C377A9D843861FC13BDDB0B88F799D3D3AEDBC8B1DC636BB5E5"
+    },
+    {
+      "id": "orespawn",
+      "version": "4.0.8.110021",
+      "file": "OreSpawn-4.0.8.110021.jar",
+      "path": "../../../../MinecraftMineralogy/OS110/OreSpawn/build/libs/OreSpawn-4.0.8.110021.jar",
+      "sha256": "FD27D4F5B4B6087C5F64344903C0E0124115E08FA2D465ECDB88D291F36B2B21",
+      "workspaceProduced": true
+    }
+  ]
+}
