@@ -684,6 +684,36 @@
           ],
           "block": "minecraft:chest",
           "meta": 0
+        },
+        {
+          "pos": [4, 1, 14],
+          "block": "poweradvantage:fluid_storage_tank",
+          "meta": 0,
+          "requiredMods": ["mineralogy"]
+        },
+        {
+          "pos": [5, 1, 14],
+          "block": "poweradvantage:fluid_pipe",
+          "meta": 0,
+          "requiredMods": ["mineralogy"]
+        },
+        {
+          "pos": [6, 1, 14],
+          "block": "poweradvantage:still",
+          "meta": 0,
+          "requiredMods": ["mineralogy"]
+        },
+        {
+          "pos": [7, 1, 14],
+          "block": "poweradvantage:fluid_pipe",
+          "meta": 0,
+          "requiredMods": ["mineralogy"]
+        },
+        {
+          "pos": [8, 1, 14],
+          "block": "poweradvantage:fluid_metal_tank",
+          "meta": 0,
+          "requiredMods": ["mineralogy"]
         }
       ],
       "setupActions": [
@@ -707,6 +737,13 @@
           "slot": 0,
           "item": "minecraft:coal",
           "count": 16
+        },
+        {
+          "type": "setFluid",
+          "pos": [4, 1, 14],
+          "fluid": "mineralogy_crude_oil",
+          "value": 2000,
+          "requiredMods": ["mineralogy"]
         }
       ],
       "startActions": [
@@ -720,6 +757,14 @@
           "slot": 0,
           "item": "minecraft:coal",
           "count": 8
+        },
+        {
+          "type": "setInventory",
+          "pos": [6, 1, 14],
+          "slot": 0,
+          "item": "minecraft:coal",
+          "count": 8,
+          "requiredMods": ["mineralogy"]
         }
       ],
       "stopActions": [
@@ -730,6 +775,11 @@
             1,
             8
           ]
+        },
+        {
+          "type": "clearInventory",
+          "pos": [6, 1, 14],
+          "requiredMods": ["mineralogy"]
         }
       ],
       "assertions": [
@@ -759,13 +809,47 @@
             1,
             8
           ]
+        },
+        {
+          "id": "power-oil-input-consumed",
+          "type": "nbtNumber",
+          "pos": [4, 1, 8],
+          "nbtPath": "Tank.Amount",
+          "operator": "less",
+          "value": 2000
+        },
+        {
+          "id": "power-oil-output-created",
+          "type": "nbtNumber",
+          "pos": [6, 1, 8],
+          "nbtPath": "Tank.Amount",
+          "operator": "greater",
+          "value": 0
+        },
+        {
+          "id": "mineralogy-oil-input-consumed",
+          "type": "nbtNumber",
+          "pos": [4, 1, 14],
+          "nbtPath": "Tank.Amount",
+          "operator": "less",
+          "value": 2000,
+          "requiredMods": ["mineralogy"]
+        },
+        {
+          "id": "mineralogy-oil-output-created",
+          "type": "nbtNumber",
+          "pos": [6, 1, 14],
+          "nbtPath": "Tank.Amount",
+          "operator": "greater",
+          "value": 0,
+          "requiredMods": ["mineralogy"]
         }
       ],
       "manualChecks": [
         "Distil exactly 2,000 mB crude oil into 1,000 mB refined oil under the default recipe.",
         "Checkpoint input, output, fuel, burn time, and progress at mid-cycle.",
         "Repeat same-session, full-process, and chunk reloads without duplicating fluid.",
-        "Repeat later with Steam and Electric stills to prove the shared registry.",
+        "When Mineralogy is loaded, compare both crude-oil lanes and require the same 2:1 refined-oil yield.",
         "Run NORMAL, TECH_PROGRESSION, and APOCALYPTIC recipe overlays."
       ]
     },
@@ -1817,8 +1901,15 @@
             1,
             13
           ],
-          "fluid": "refined_oil",
+          "fluid": "crude_oil",
           "value": 4000
+        },
+        {
+          "type": "setFluid",
+          "pos": [12, 1, 13],
+          "fluid": "mineralogy_crude_oil",
+          "value": 4000,
+          "requiredMods": ["mineralogy"]
         }
       ],
       "stopActions": [
@@ -1910,7 +2001,7 @@
         "Coal: valid/invalid fuels, water scarcity, burn time, and restart persistence.",
         "Electric: verify the 16 electricity to 0.5 steam per-tick relationship.",
         "Geothermal: compare fire and lava, then full-restart temperature for SA-110-002.",
-        "Oil: consume exact 100 mB increments and reject an unconfigured fluid.",
+        "Oil: compare Power and Mineralogy crude oil at the same built-in burn value, then verify explicit fuel configuration still overrides it.",
         "Add sustained rated load, isolate output, interrupt supply, and reconcile steam."
       ]
     },

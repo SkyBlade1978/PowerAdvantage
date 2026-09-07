@@ -41,6 +41,7 @@ final class WorksDefinition {
         int meta;
         boolean optional;
         JsonObject nbt;
+        List<String> requiredMods = new ArrayList<>();
     }
 
     static final class Action extends Placement {

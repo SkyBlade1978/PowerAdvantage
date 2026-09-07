@@ -22,7 +22,7 @@ public class ProfileManifestTest {
         File directory = new File("profiles");
         File[] profiles = directory.listFiles((dir, name) -> name.endsWith(".json"));
         assertNotNull(profiles);
-        assertEquals(7, profiles.length);
+        assertEquals(11, profiles.length);
         Set<String> recipeModes = new HashSet<>();
         Set<String> profileNames = new HashSet<>();
 
@@ -32,8 +32,8 @@ public class ProfileManifestTest {
                 profile = new JsonParser().parse(reader).getAsJsonObject();
             }
             assertTrue(file.getName(), profileNames.add(text(profile, "name")));
-            assertEquals("6958ed2dfdd745ebc1f614a32072765af061fe8e", text(profile, "sourceCommit"));
-            assertEquals("2.4.1.110021", text(profile, "sourceVersion"));
+            assertEquals("18e5192b73c6768208c1d5c5687ea230ed470bc6", text(profile, "sourceCommit"));
+            assertEquals("2.4.2.110021", text(profile, "sourceVersion"));
             recipeModes.add(text(profile, "recipeMode"));
 
             if ("packaged".equals(text(profile, "mode"))) {
@@ -41,11 +41,28 @@ public class ProfileManifestTest {
                 assertNotNull(file.getName(), forge);
                 assertEquals(64, text(forge, "sha256").length());
             }
+            if (text(profile, "name").startsWith("worldgen-")) {
+                assertFalse(file.getName(), profile.get("buildWorks").getAsBoolean());
+                assertEquals("DEFAULT", text(profile, "levelType"));
+                assertTrue(file.getName(), profile.get("worldgenSampleRadius").getAsInt() > 0);
+            }
+            if ("worldgen-legacy-import".equals(text(profile, "name"))) {
+                JsonArray exclusions = profile.getAsJsonArray("stableWorldgenCountExclusions");
+                assertNotNull(exclusions);
+                assertEquals(1, exclusions.size());
+                assertEquals("poweradvantage:crude_oil", exclusions.get(0).getAsString());
+            }
 
             JsonArray mods = profile.getAsJsonArray("mods");
             assertNotNull(mods);
+            int oreSpawnCount = 0;
             for (JsonElement element : mods) {
                 JsonObject mod = element.getAsJsonObject();
+                if ("orespawn".equals(text(mod, "id"))) {
+                    oreSpawnCount++;
+                    assertEquals("4.0.8.110021", text(mod, "version"));
+                    assertEquals("OreSpawn-4.0.8.110021.jar", text(mod, "file"));
+                }
                 assertFalse(file.getName(), text(mod, "id").isEmpty());
                 assertFalse(file.getName(), text(mod, "file").isEmpty());
                 assertFalse(file.getName(), text(mod, "version").isEmpty());
@@ -55,8 +72,16 @@ public class ProfileManifestTest {
                         && mod.get("workspaceProduced").getAsBoolean();
                 if (!workspaceProduced) assertEquals(file.getName(), 64, text(mod, "sha256").length());
             }
+            if ("packaged".equals(text(profile, "mode"))) {
+                assertEquals("Every packaged profile requires exactly one pinned OreSpawn 4 jar: " + file,
+                        1, oreSpawnCount);
+            }
         }
 
+        assertTrue(profileNames.contains("packaged-mineralogy"));
+        assertTrue(profileNames.contains("worldgen-advantage"));
+        assertTrue(profileNames.contains("worldgen-mineralogy"));
+        assertTrue(profileNames.contains("worldgen-legacy-import"));
         assertTrue(recipeModes.contains("NORMAL"));
         assertTrue(recipeModes.contains("TECH_PROGRESSION"));
         assertTrue(recipeModes.contains("APOCALYPTIC"));

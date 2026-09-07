@@ -7,8 +7,8 @@
   "shutdownTimeoutSeconds": 60,
   "stationRunSeconds": 5,
   "recipeMode": "TECH_PROGRESSION",
-  "sourceCommit": "6958ed2dfdd745ebc1f614a32072765af061fe8e",
-  "sourceVersion": "2.4.1.110021",
+  "sourceCommit": "18e5192b73c6768208c1d5c5687ea230ed470bc6",
+  "sourceVersion": "2.4.2.110021",
   "lifecycleStations": [],
   "mods": [
     {
@@ -20,17 +20,17 @@
     },
     {
       "id": "steamadvantage",
-      "version": "2.2.2.110021",
-      "file": "SteamAdvantage-2.2.2.110021-deobf.jar",
-      "path": "../../SteamAdvantage/SteamAdvantage/build/libs-dev/SteamAdvantage-2.2.2.110021-deobf.jar",
-      "sha256": "1F6787CA78DCCB7BA6223C14C9A37FCF8F65FA693C49066CF2F0EB8F53DBC005"
+      "version": "2.2.3.110021",
+      "file": "SteamAdvantage-2.2.3.110021-deobf.jar",
+      "path": "../../SteamAdvantage/SteamAdvantage/build/libs-dev/SteamAdvantage-2.2.3.110021-deobf.jar",
+      "sha256": "0DE60F1D797955BC38136023FA00BDB2302EE9EBF8F42DCA712D292E1B262926"
     },
     {
       "id": "electricadvantage",
-      "version": "2.2.2.110021",
-      "file": "ElectricAdvantage-2.2.2.110021-deobf.jar",
-      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs-dev/ElectricAdvantage-2.2.2.110021-deobf.jar",
-      "sha256": "D1BF08D489DC5AE46AD58311FFFC0F76A39F9CB559A522C046FAC777A984F2F9"
+      "version": "2.2.3.110021",
+      "file": "ElectricAdvantage-2.2.3.110021-deobf.jar",
+      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs-dev/ElectricAdvantage-2.2.3.110021-deobf.jar",
+      "sha256": "C594C85862A4B4351C139C59135CA0F3F5DE9FBE7FAFCB2794369FDDC7A15624"
     }
   ]
 }

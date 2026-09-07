@@ -1,5 +1,5 @@
 {
-  "name": "packaged-current",
+  "name": "packaged-mineralogy",
   "mode": "packaged",
   "runtimeBase": "../run-advantage-works",
   "serverPort": 25565,
@@ -45,19 +45,20 @@
       "sha256": "643C6754165694187BDB6D8D3A1DAD0A9B25106F4711DFE60F57FCDE4D6B0F48"
     },
     {
-      "id": "basemetals",
-      "version": "2.5.0-beta4",
-      "file": "BaseMetals-1.10.2-2.5.0-beta4.238.jar",
-      "path": "${env:ADVANTAGE_WORKS_CURRENT_MODS}/BaseMetals-1.10.2-2.5.0-beta4.238.jar",
-      "sha256": "51F04770C316E62D9ED3EF713144F02FA2EC899645813627091365E12F61C3EF"
-    },
-    {
       "id": "orespawn",
       "version": "4.0.8.110021",
       "file": "OreSpawn-4.0.8.110021.jar",
       "path": "../../../../MinecraftMineralogy/OS110/OreSpawn/build/libs/OreSpawn-4.0.8.110021.jar",
       "sha256": "FD27D4F5B4B6087C5F64344903C0E0124115E08FA2D465ECDB88D291F36B2B21",
       "workspaceProduced": true
+    },
+    {
+      "id": "mineralogy",
+      "version": "6.0.2.110021",
+      "file": "Mineralogy-6.0.2.110021.jar",
+      "path": "../../../../MinecraftMineralogy/MinecraftMineralogy 110/MinecraftMineralogy/build/libs/Mineralogy-6.0.2.110021.jar",
+      "sha256": "48841ABD9517127D1F0D17960AAD86FEFB251D340B006872ACECADD01A4B43F9"
     }
-  ]
+  ],
+  "lifecycleStations": ["W-03", "S-01"]
 }

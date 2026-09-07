@@ -25,9 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.net.URL;
@@ -60,6 +62,7 @@ public final class WorksRunner {
             throw new IllegalStateException("Cannot create runtime directories under " + runtime);
         }
         writeRuntimeFiles(runtime, profile);
+        stageConfigFixtures(testRig, runtime, profile.configFixtures);
         List<Map<String, Object>> staged = stageMods(testRig, mods, profile.mods);
         if ("packaged".equals(profile.mode)) preparePackagedServer(testRig, runtime, profile);
         List<String> lifecycleStations = arguments.lifecycleStations == null
@@ -71,23 +74,40 @@ public final class WorksRunner {
 
         System.out.println("Advantage Works runtime: " + runtime);
         Process first = launch(profile, powerRoot, runtime, results);
-        waitForReady(first, new File(runtime, "logs/latest.log"), profile.startupTimeoutSeconds);
-        send(first, "advworks build all");
-        Thread.sleep(3000L);
+        File latestLog = new File(runtime, "logs/latest.log");
+        waitForReady(first, latestLog, profile.startupTimeoutSeconds);
+        if (profile.buildWorks) {
+            send(first, "advworks build all");
+            Thread.sleep(3000L);
+        }
 
         if (arguments.automated) {
-            for (String station : lifecycleStations) {
-                send(first, "advworks start " + station);
-                Thread.sleep(stationRunSeconds * 1000L);
-                send(first, "advworks checkpoint " + station + " before-restart");
-                send(first, "advworks stop " + station);
+            if (profile.buildWorks) {
+                for (String station : lifecycleStations) {
+                    send(first, "advworks start " + station);
+                    Thread.sleep(stationRunSeconds * 1000L);
+                    send(first, "advworks checkpoint " + station + " before-restart");
+                    send(first, "advworks stop " + station);
+                }
+                send(first, "advworks check all");
             }
-            send(first, "advworks check all");
+            if (profile.worldgenSampleRadius > 0) {
+                Thread.sleep(stationRunSeconds * 1000L);
+                send(first, "advworks sample-worldgen " + profile.worldgenSampleRadius);
+            }
             send(first, "save-all");
             send(first, "stop");
             requireExit(first, profile.shutdownTimeoutSeconds);
-            File latestLog = new File(runtime, "logs/latest.log");
             copyIfPresent(latestLog, new File(results, "first-run.log"));
+            File firstWorldgen = new File(results, "worldgen-first-run.json");
+            if (profile.worldgenSampleRadius > 0) {
+                copyIfPresent(new File(results, "worldgen-sample.json"), firstWorldgen);
+                requireWorldgenSummary(firstWorldgen, profile.worldgenExpectations, "first-run");
+            }
+            requireProfileAssertions(runtime, results, profile, "first-run",
+                    profile.firstProfileAssertions);
+            requireFileAssertions(runtime, results, "first-run", profile.firstFileAssertions);
+            applyProfileMutations(runtime, profile);
             if (latestLog.exists() && !latestLog.delete()) {
                 throw new IllegalStateException("Cannot clear first-run log before restart: " + latestLog);
             }
@@ -95,15 +115,32 @@ public final class WorksRunner {
             Process second = launch(profile, powerRoot, runtime, results);
             waitForReady(second, latestLog, profile.startupTimeoutSeconds);
             Thread.sleep(stationRunSeconds * 1000L);
-            for (String station : lifecycleStations) {
-                send(second, "advworks checkpoint " + station + " after-restart");
+            if (profile.buildWorks) {
+                for (String station : lifecycleStations) {
+                    send(second, "advworks checkpoint " + station + " after-restart");
+                }
+                send(second, "advworks check all");
             }
-            send(second, "advworks check all");
+            if (profile.worldgenSampleRadius > 0) {
+                send(second, "advworks sample-worldgen " + profile.worldgenSampleRadius);
+            }
             send(second, "save-all");
             send(second, "stop");
             requireExit(second, profile.shutdownTimeoutSeconds);
-            copyIfPresent(new File(runtime, "logs/latest.log"), new File(results, "restart-run.log"));
-            requireAcceptableSummary(new File(results, "all-summary.json"));
+            copyIfPresent(latestLog, new File(results, "restart-run.log"));
+            File restartWorldgen = new File(results, "worldgen-restart-run.json");
+            if (profile.worldgenSampleRadius > 0) {
+                copyIfPresent(new File(results, "worldgen-sample.json"), restartWorldgen);
+                requireWorldgenSummary(restartWorldgen, profile.worldgenExpectations, "restart-run");
+                if (profile.requireStableWorldgenCounts) {
+                    requireStableWorldgenCounts(firstWorldgen, restartWorldgen,
+                            profile.stableWorldgenCountExclusions);
+                }
+            }
+            requireProfileAssertions(runtime, results, profile, "restart-run",
+                    profile.restartProfileAssertions);
+            requireFileAssertions(runtime, results, "restart-run", profile.restartFileAssertions);
+            if (profile.buildWorks) requireAcceptableSummary(new File(results, "all-summary.json"));
             System.out.println("Automated Advantage Works run complete: " + results);
             return;
         }
@@ -405,10 +442,10 @@ public final class WorksRunner {
                 + "force-gamemode=true\n"
                 + "gamemode=1\n"
                 + "generate-structures=false\n"
-                + "generator-settings=3;minecraft:bedrock,2*minecraft:dirt,minecraft:grass;1;\n"
-                + "level-name=AdvantageWorks\n"
-                + "level-seed=advantage-works-1.10.2-v1\n"
-                + "level-type=FLAT\n"
+                + "generator-settings=" + profile.generatorSettings + "\n"
+                + "level-name=" + profile.levelName + "\n"
+                + "level-seed=" + profile.levelSeed + "\n"
+                + "level-type=" + profile.levelType + "\n"
                 + "max-players=8\n"
                 + "motd=Advantage Works 1.10.2 Commissioning Ground\n"
                 + "online-mode=false\n"
@@ -432,6 +469,10 @@ public final class WorksRunner {
         manifest.put("recipeMode", profile.recipeMode);
         manifest.put("sourceCommit", profile.sourceCommit);
         manifest.put("sourceVersion", profile.sourceVersion);
+        manifest.put("levelName", profile.levelName);
+        manifest.put("levelType", profile.levelType);
+        manifest.put("buildWorks", profile.buildWorks);
+        manifest.put("worldgenSampleRadius", profile.worldgenSampleRadius);
         manifest.put("createdAtUtc", timestamp());
         manifest.put("automated", automated);
         manifest.put("lifecycleStations", lifecycleStations);
@@ -450,10 +491,238 @@ public final class WorksRunner {
             if (profile == null || profile.name == null || profile.mode == null) {
                 throw new IllegalArgumentException("Incomplete profile " + file);
             }
+            if (profile.levelName == null || !profile.levelName.startsWith("AdvantageWorks")) {
+                throw new IllegalArgumentException("Profile levelName must begin with AdvantageWorks: " + file);
+            }
             return profile;
         }
     }
 
+    private static void stageConfigFixtures(File testRig, File runtime,
+                                            List<ConfigFixture> fixtures) throws Exception {
+        for (ConfigFixture fixture : fixtures) {
+            File source = resolve(testRig, fixture.source);
+            if (!source.isFile()) throw new IllegalStateException("Missing config fixture " + source);
+            File destination = resolve(runtime, fixture.destination);
+            requireChild(runtime, destination);
+            File parent = destination.getParentFile();
+            if (!parent.isDirectory() && !parent.mkdirs()) {
+                throw new IllegalStateException("Cannot create fixture directory " + parent);
+            }
+            Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    private static void requireProfileAssertions(File runtime, File results, Profile profile,
+                                                 String phase, List<JsonAssertion> assertions)
+            throws Exception {
+        if (assertions.isEmpty()) return;
+        File profileFile = worldProfileFile(runtime, profile);
+        JsonObject root = readJsonObject(profileFile);
+        List<Map<String, Object>> rows = new ArrayList<>();
+        boolean failed = false;
+        for (JsonAssertion assertion : assertions) {
+            JsonElement actual = jsonValue(root, assertion);
+            boolean passed = assertion.present ? actual != null : actual == null;
+            if (passed && assertion.present && actual != null) {
+                if (assertion.expectedBoolean != null) {
+                    passed = actual.isJsonPrimitive()
+                            && actual.getAsBoolean() == assertion.expectedBoolean;
+                } else if (assertion.expectedString != null) {
+                    passed = actual.isJsonPrimitive()
+                            && assertion.expectedString.equals(actual.getAsString());
+                } else if (assertion.expectedNumber != null) {
+                    passed = actual.isJsonPrimitive()
+                            && Math.abs(actual.getAsDouble() - assertion.expectedNumber) < 0.0001D;
+                }
+            }
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", assertion.id);
+            row.put("section", assertion.section);
+            row.put("entry", assertion.entry);
+            row.put("field", assertion.field);
+            row.put("expectedPresent", assertion.present);
+            row.put("actual", actual == null ? null : actual);
+            row.put("result", passed ? "PASS" : "FAIL");
+            rows.add(row);
+            failed |= !passed;
+        }
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("phase", phase);
+        report.put("profileFile", profileFile.getAbsolutePath());
+        report.put("assertions", rows);
+        writeRunnerReport(results, phase + "-orespawn-profile.json", report);
+        if (failed) throw new IllegalStateException("OreSpawn profile assertions failed during " + phase);
+    }
+
+    private static void applyProfileMutations(File runtime, Profile profile) throws Exception {
+        if (profile.profileMutations.isEmpty()) return;
+        File profileFile = worldProfileFile(runtime, profile);
+        JsonObject root = readJsonObject(profileFile);
+        for (JsonMutation mutation : profile.profileMutations) {
+            JsonObject entry = jsonEntry(root, mutation);
+            if (mutation.field == null || mutation.field.isEmpty()) {
+                throw new IllegalArgumentException("Profile mutation requires a field");
+            }
+            if (mutation.booleanValue != null) entry.addProperty(mutation.field, mutation.booleanValue);
+            else if (mutation.stringValue != null) entry.addProperty(mutation.field, mutation.stringValue);
+            else if (mutation.numberValue != null) entry.addProperty(mutation.field, mutation.numberValue);
+            else throw new IllegalArgumentException("Profile mutation has no value");
+        }
+        try (OutputStreamWriter writer = new OutputStreamWriter(
+                new FileOutputStream(profileFile), StandardCharsets.UTF_8)) {
+            GSON.toJson(root, writer);
+        }
+    }
+
+    private static JsonElement jsonValue(JsonObject root, JsonTarget target) {
+        if (target.section == null || !root.has(target.section)
+                || !root.get(target.section).isJsonObject()) return null;
+        JsonObject section = root.getAsJsonObject(target.section);
+        if (target.entry == null || !section.has(target.entry)) return null;
+        JsonElement value = section.get(target.entry);
+        if (target.field == null || target.field.isEmpty()) return value;
+        if (!value.isJsonObject() || !value.getAsJsonObject().has(target.field)) return null;
+        return value.getAsJsonObject().get(target.field);
+    }
+
+    private static JsonObject jsonEntry(JsonObject root, JsonTarget target) {
+        JsonElement value = jsonValue(root, new JsonTargetCopy(target));
+        if (value == null || !value.isJsonObject()) {
+            throw new IllegalStateException("Missing OreSpawn profile entry "
+                    + target.section + "/" + target.entry);
+        }
+        return value.getAsJsonObject();
+    }
+
+    private static File worldProfileFile(File runtime, Profile profile) throws Exception {
+        File file = new File(new File(runtime, profile.levelName),
+                "serverconfig/orespawn-worldgen.json").getCanonicalFile();
+        requireChild(runtime, file);
+        return file;
+    }
+
+    private static JsonObject readJsonObject(File file) throws Exception {
+        if (!file.isFile()) throw new IllegalStateException("Missing JSON file " + file);
+        try (InputStreamReader reader = new InputStreamReader(
+                new FileInputStream(file), StandardCharsets.UTF_8)) {
+            JsonElement parsed = GSON.fromJson(reader, JsonElement.class);
+            if (parsed == null || !parsed.isJsonObject()) {
+                throw new IllegalStateException("Expected JSON object in " + file);
+            }
+            return parsed.getAsJsonObject();
+        }
+    }
+
+    private static void requireFileAssertions(File runtime, File results, String phase,
+                                              List<FileAssertion> assertions) throws Exception {
+        if (assertions.isEmpty()) return;
+        List<Map<String, Object>> rows = new ArrayList<>();
+        boolean failed = false;
+        for (FileAssertion assertion : assertions) {
+            File file = resolve(runtime, assertion.path);
+            requireChild(runtime, file);
+            int occurrences = file.isFile() && assertion.contains != null
+                    ? occurrences(file, assertion.contains) : 0;
+            boolean passed = file.isFile()
+                    && (assertion.contains == null || occurrences >= assertion.minimumOccurrences);
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", assertion.id);
+            row.put("path", file.getAbsolutePath());
+            row.put("contains", assertion.contains);
+            row.put("occurrences", occurrences);
+            row.put("result", passed ? "PASS" : "FAIL");
+            rows.add(row);
+            failed |= !passed;
+        }
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("phase", phase);
+        report.put("assertions", rows);
+        writeRunnerReport(results, phase + "-file-assertions.json", report);
+        if (failed) throw new IllegalStateException("File assertions failed during " + phase);
+    }
+
+    private static int occurrences(File file, String needle) throws Exception {
+        String text = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+        int result = 0;
+        int from = 0;
+        while ((from = text.indexOf(needle, from)) >= 0) {
+            result++;
+            from += needle.length();
+        }
+        return result;
+    }
+
+    private static void requireWorldgenSummary(File reportFile, WorldgenExpectations expectations,
+                                               String phase) throws Exception {
+        JsonObject report = readJsonObject(reportFile);
+        JsonObject counts = report.has("counts") ? report.getAsJsonObject("counts") : new JsonObject();
+        JsonObject violations = report.has("biomeViolations")
+                ? report.getAsJsonObject("biomeViolations") : new JsonObject();
+        List<String> failures = new ArrayList<>();
+        for (Map.Entry<String, Long> expected : expectations.minimumCounts.entrySet()) {
+            long actual = counts.has(expected.getKey()) ? counts.get(expected.getKey()).getAsLong() : 0L;
+            if (actual < expected.getValue()) {
+                failures.add(expected.getKey() + " count " + actual + " is below " + expected.getValue());
+            }
+        }
+        for (Map.Entry<String, Long> expected : expectations.maximumCounts.entrySet()) {
+            long actual = counts.has(expected.getKey()) ? counts.get(expected.getKey()).getAsLong() : 0L;
+            if (actual > expected.getValue()) {
+                failures.add(expected.getKey() + " count " + actual + " exceeds " + expected.getValue());
+            }
+        }
+        if (expectations.zeroBiomeViolations) {
+            for (Map.Entry<String, JsonElement> entry : violations.entrySet()) {
+                if (entry.getValue().getAsLong() != 0L) {
+                    failures.add(entry.getKey() + " has " + entry.getValue().getAsLong()
+                            + " biome placement violations");
+                }
+            }
+        }
+        if (!failures.isEmpty()) {
+            throw new IllegalStateException("Worldgen assertions failed during " + phase + ": " + failures);
+        }
+    }
+
+    private static void requireStableWorldgenCounts(File first, File restart,
+                                                    List<String> exclusions) throws Exception {
+        JsonObject firstRoot = readJsonObject(first);
+        JsonObject restartRoot = readJsonObject(restart);
+        if (!equalExcept(firstRoot.getAsJsonObject("counts"), restartRoot.getAsJsonObject("counts"), exclusions)
+                || !equalExcept(firstRoot.getAsJsonObject("biomeViolations"),
+                restartRoot.getAsJsonObject("biomeViolations"), exclusions)) {
+            throw new IllegalStateException("Worldgen sample changed across full process restart");
+        }
+    }
+
+    private static boolean equalExcept(JsonObject first, JsonObject restart, List<String> exclusions) {
+        Set<String> keys = new LinkedHashSet<>();
+        for (Map.Entry<String, JsonElement> entry : first.entrySet()) keys.add(entry.getKey());
+        for (Map.Entry<String, JsonElement> entry : restart.entrySet()) keys.add(entry.getKey());
+        for (String key : keys) {
+            if (exclusions.contains(key)) continue;
+            JsonElement firstValue = first.get(key);
+            JsonElement restartValue = restart.get(key);
+            if (firstValue == null ? restartValue != null : !firstValue.equals(restartValue)) return false;
+        }
+        return true;
+    }
+
+    private static void writeRunnerReport(File results, String name,
+                                          Map<String, Object> report) throws Exception {
+        try (OutputStreamWriter writer = new OutputStreamWriter(
+                new FileOutputStream(new File(results, name)), StandardCharsets.UTF_8)) {
+            GSON.toJson(report, writer);
+        }
+    }
+
+    private static final class JsonTargetCopy extends JsonTarget {
+        JsonTargetCopy(JsonTarget source) {
+            section = source.section;
+            entry = source.entry;
+        }
+    }
     private static File resolve(File base, String path) throws Exception {
         path = expand(path);
         File file = new File(path);
@@ -575,6 +844,14 @@ public final class WorksRunner {
         int startupTimeoutSeconds = 120;
         int shutdownTimeoutSeconds = 60;
         int stationRunSeconds = 5;
+        String levelName = "AdvantageWorks";
+        String levelSeed = "advantage-works-1.10.2-v1";
+        String levelType = "FLAT";
+        String generatorSettings = "3;minecraft:bedrock,2*minecraft:dirt,minecraft:grass;1;";
+        boolean buildWorks = true;
+        int worldgenSampleRadius;
+        boolean requireStableWorldgenCounts = true;
+        List<String> stableWorldgenCountExclusions = new ArrayList<>();
         String java8Home;
         String gradleJavaHome;
         String recipeMode = "NORMAL";
@@ -583,6 +860,13 @@ public final class WorksRunner {
         ForgeInput forge;
         List<String> launchCommand = new ArrayList<>();
         List<ModInput> mods = new ArrayList<>();
+        List<ConfigFixture> configFixtures = new ArrayList<>();
+        List<JsonAssertion> firstProfileAssertions = new ArrayList<>();
+        List<JsonAssertion> restartProfileAssertions = new ArrayList<>();
+        List<JsonMutation> profileMutations = new ArrayList<>();
+        List<FileAssertion> firstFileAssertions = new ArrayList<>();
+        List<FileAssertion> restartFileAssertions = new ArrayList<>();
+        WorldgenExpectations worldgenExpectations = new WorldgenExpectations();
         List<String> lifecycleStations = Arrays.asList(
                 "W-01", "W-02", "W-03", "W-04",
                 "S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08",
@@ -605,5 +889,43 @@ public final class WorksRunner {
         String installerPath;
         String url;
         String sha256;
+    }
+
+    private static final class ConfigFixture {
+        String source;
+        String destination;
+    }
+
+    private static class JsonTarget {
+        String section;
+        String entry;
+        String field;
+    }
+
+    private static final class JsonAssertion extends JsonTarget {
+        String id;
+        boolean present = true;
+        Boolean expectedBoolean;
+        String expectedString;
+        Double expectedNumber;
+    }
+
+    private static final class JsonMutation extends JsonTarget {
+        Boolean booleanValue;
+        String stringValue;
+        Double numberValue;
+    }
+
+    private static final class FileAssertion {
+        String id;
+        String path;
+        String contains;
+        int minimumOccurrences = 1;
+    }
+
+    private static final class WorldgenExpectations {
+        Map<String, Long> minimumCounts = new LinkedHashMap<>();
+        Map<String, Long> maximumCounts = new LinkedHashMap<>();
+        boolean zeroBiomeViolations = true;
     }
 }

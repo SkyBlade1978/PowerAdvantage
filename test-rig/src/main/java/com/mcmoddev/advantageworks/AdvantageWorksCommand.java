@@ -18,7 +18,7 @@ final class AdvantageWorksCommand extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/advworks <build|reset|start|stop|check|status|checkpoint> [station|all] [name]";
+        return "/advworks <build|reset|start|stop|check|status|checkpoint|sample-worldgen> [target] [name]";
     }
 
     @Override
@@ -59,6 +59,16 @@ final class AdvantageWorksCommand extends CommandBase {
                 if (args.length < 3) throw new CommandException("Checkpoint requires a station and name");
                 message = controller.checkpoint(server, target, args[2]);
                 break;
+            case "sample-worldgen":
+                if (args.length < 2) throw new CommandException("Worldgen sampling requires a chunk radius");
+                int radius;
+                try {
+                    radius = Integer.parseInt(args[1]);
+                } catch (NumberFormatException failure) {
+                    throw new CommandException("Worldgen chunk radius must be a number");
+                }
+                message = controller.sampleWorldgen(server, radius);
+                break;
             default:
                 throw new CommandException("Unknown Advantage Works operation: " + operation);
         }
@@ -70,7 +80,7 @@ final class AdvantageWorksCommand extends CommandBase {
                                            String[] args, net.minecraft.util.math.BlockPos pos) {
         if (args.length == 1) {
             return getListOfStringsMatchingLastWord(args,
-                    Arrays.asList("build", "reset", "start", "stop", "check", "status", "checkpoint"));
+                    Arrays.asList("build", "reset", "start", "stop", "check", "status", "checkpoint", "sample-worldgen"));
         }
         if (args.length == 2) {
             return getListOfStringsMatchingLastWord(args, WorksController.getInstance().stationIdsWithAll());

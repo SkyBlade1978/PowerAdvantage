@@ -25,6 +25,7 @@ Every bay has clickable start, stop, reset, and check signs plus a wool status l
 /advworks check <station|all>
 /advworks status [station]
 /advworks checkpoint <station> <name>
+/advworks sample-worldgen <chunk-radius>
 ```
 
 Before a player uses the clickable controls, grant that tester operator permission with `op <player>` at the server console. The harness intentionally keeps `/advworks` at permission level 2 as a second interlock beyond the marked disposable world.
@@ -64,28 +65,32 @@ gradlew.bat -p test-rig verifyWorksPackagedCurrent -PworksStations=W-04,S-02 -Pw
 gradlew.bat -p test-rig verifyWorksPackagedCurrent -PworksStations=E-01 -PworksServerPort=25566
 ```
 
-Every run still builds and checks the complete works; the selection controls which stations are started, stopped, and checkpointed around the full process restart. The configured run duration is also used as a post-restart settle interval before assertions, allowing an eight-tick distribution cycle to complete. Use `worksServerPort` when another local server occupies the profile's default port. The effective station list, duration, and port are recorded in `run-manifest.json`.
+Every machinery profile still builds and checks the complete works; the selection controls which stations are started, stopped, and checkpointed around the full process restart. Normal-world generation profiles deliberately skip station construction. The configured run duration is also used as a post-restart settle interval before assertions, allowing an eight-tick distribution cycle to complete. Use `worksServerPort` when another local server occupies the profile's default port. The effective station list, duration, and port are recorded in `run-manifest.json`.
 
-The development profile uses current PowerAdvantage source plus the sibling SteamAdvantage and ElectricAdvantage deobf jars. It deliberately omits BaseMetals and OreSpawn so integration-dependent behavior is visibly skipped or left for the packaged profiles.
+The development profile uses current PowerAdvantage source plus the sibling SteamAdvantage and ElectricAdvantage deobf jars. PowerAdvantage supplies the pinned OreSpawn 4 development runtime; BaseMetals and Mineralogy remain absent so their integrations are visibly skipped.
 
 ## Run matrix
 
 | Profile/task | Purpose |
 | --- | --- |
-| `verifyWorksDev` | Current Power source and sibling deobf extensions, without BaseMetals/OreSpawn |
-| `verifyWorksPackagedCurrent` | Reobfuscated Advantage jars with BaseMetals `2.5.0-beta4.238` and OreSpawn `3.2.2.104` |
-| `verifyWorksPackagedLegacy` | Reobfuscated Advantage jars with BaseMetals `2.4.0.11` and OreSpawn `1.1.0` |
-| `verifyWorksPackagedDecoupled` | Reobfuscated Advantage jars without BaseMetals/OreSpawn |
-| `verifyWorksPackagedOptionalPower` | RF API and RebornCore converter discovery |
+| `verifyWorksDev` | Current Power source and sibling deobf extensions with pinned OreSpawn 4, without BaseMetals/Mineralogy |
+| `verifyWorksPackagedCurrent` | Reobfuscated Advantage jars with BaseMetals `2.5.0-beta4.238` and pinned OreSpawn `4.0.8.110021` |
+| `verifyWorksPackagedLegacy` | Reobfuscated Advantage jars with BaseMetals `2.4.0.11` and pinned OreSpawn `4.0.8.110021` |
+| `verifyWorksPackagedDecoupled` | Reobfuscated Advantage jars with OreSpawn 4 but without BaseMetals/Mineralogy |
+| `verifyWorksPackagedMineralogy` | Reobfuscated Advantage and Mineralogy jars; exercises both crude oils through distillation, transfer, persistence, and boilers |
+| `verifyWorksPackagedOptionalPower` | RF API and RebornCore converter discovery with OreSpawn 4 |
 | `verifyWorksTechProgression` | Registration/build audit under `TECH_PROGRESSION` |
 | `verifyWorksApocalyptic` | Registration/build audit under `APOCALYPTIC` |
+| `verifyWorksWorldgenAdvantage` | Normal world: Electric fallback sulfur/lithium, Power desert oil, user-disable persistence |
+| `verifyWorksWorldgenMineralogy` | Normal world: Mineralogy sulfur/ocean oil, Electric lithium fallback, user-enable persistence |
+| `verifyWorksWorldgenLegacyImport` | Normal world: OS1 files migrate once, remain authoritative, and do not duplicate modern rules |
 
 Profiles pin filenames, mod IDs, versions, and SHA-256 values. Workspace-built harness jars are identified and version-checked but not pinned to a source-dependent hash. The packaged runner downloads only the pinned official Forge installer, verifies it, installs a fresh server into the disposable runtime, and launches Minecraft with Java 8.
 
 Set these only for profiles that need them:
 
 ```text
-ADVANTAGE_WORKS_CURRENT_MODS=<directory containing the pinned current BaseMetals and OreSpawn jars>
+ADVANTAGE_WORKS_CURRENT_MODS=<directory containing BaseMetals-1.10.2-2.5.0-beta4.238.jar>
 ADVANTAGE_WORKS_REBORNCORE_110=<full path to reborncore-237903-2425028.jar>
 ADVANTAGE_WORKS_JAVA8_HOME=<Java 8 home, when it is not in the default Gradle toolchain cache>
 ADVANTAGE_WORKS_GRADLE_JAVA_HOME=<Java 17 home, when the runner itself is launched on Java 8>
@@ -100,7 +105,15 @@ ADVANTAGE_WORKS_GRADLE_JAVA_HOME=<Java 17 home, when the runner itself is launch
 | South proving grounds | `S-05` drill; `S-06` pump; `S-07` elevator; `S-08` musket; `E-01` generators/turbine; `E-06` drill; `E-07` light/turret |
 | Electric Works | `E-02` batteries/distribution; `E-03` processors; `E-04` fluids; `E-05` growth; `E-08` isolated assembler diagnostic |
 
-Ore generation is intentionally excluded from the superflat works. Run that check in a separately generated disposable normal world so terrain generation cannot interfere with machine conservation tests.
+Ore generation is intentionally excluded from the superflat works. The three `verifyWorksWorldgen*` tasks create separately named disposable normal worlds, locate nearby desert and ocean biome samples, generate bounded chunk squares, count the target blocks, check oil biome placement, and repeat the same scan after a full process restart.
+
+## OreSpawn profile checks
+
+The normal-world profiles inspect `<world>/serverconfig/orespawn-worldgen.json` after first shutdown and after restart. They verify default ownership, edit a persisted `enabled` flag to simulate a user choice, and require OreSpawn to preserve that choice. The legacy profile stages the retained OS1 Power/Electric files under `config/orespawn/`, requires their migration report and provider files, and rejects simultaneous modern duplicate IDs.
+
+`worldgen-mineralogy` covers Mineralogy-over-Electric sulfur ownership and both oil biomes. A current BaseMinerals 1.10 artifact is not present in this workspace, so the BaseMinerals ownership combinations remain statically covered by ElectricAdvantage's provider tests and are an explicit pending runtime matrix item. Do not represent that combination as runtime-verified until a filename, mod version, and SHA-256 can be pinned.
+
+The sampler records block counts, sampled biome centers, any deposit-producing chunks outside their declared biome selector, and informational per-block spill at biome boundaries. OreSpawn selects deposits by chunk-centre biome. Existing chunks are sampled again after restart; disabled rules affect only terrain generated later and therefore must not erase or alter the recorded blocks. Solid ore counts must remain exact. The legacy profile excludes only `poweradvantage:crude_oil` from exact count comparison because OS1 represented it as an exposed ore vein and the fluid can continue flowing between observations; its migrated rule, enabled state, and positive presence are still asserted on both runs.
 
 ## Confirmed-bug regression witnesses
 

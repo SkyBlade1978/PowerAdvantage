@@ -7,8 +7,8 @@
   "shutdownTimeoutSeconds": 60,
   "stationRunSeconds": 5,
   "recipeMode": "NORMAL",
-  "sourceCommit": "6958ed2dfdd745ebc1f614a32072765af061fe8e",
-  "sourceVersion": "2.4.1.110021",
+  "sourceCommit": "18e5192b73c6768208c1d5c5687ea230ed470bc6",
+  "sourceVersion": "2.4.2.110021",
   "forge": {
     "version": "1.10.2-12.18.3.2511",
     "installerPath": ".cache/forge-1.10.2-12.18.3.2511-installer.jar",
@@ -25,24 +25,24 @@
     },
     {
       "id": "poweradvantage",
-      "version": "2.4.1.110021",
-      "file": "PowerAdvantage-2.4.1.110021.jar",
-      "path": "../build/libs/PowerAdvantage-2.4.1.110021.jar",
-      "sha256": "07D1BF0EBEF9882C89E64BBCE3A4D1170E0BD85EFE552AD02D367E55C7F9A174"
+      "version": "2.4.2.110021",
+      "file": "PowerAdvantage-2.4.2.110021.jar",
+      "path": "../build/libs/PowerAdvantage-2.4.2.110021.jar",
+      "sha256": "BA4E1006E3C5D269B701AC6BC2A5072111EE79A4E8D34F201B5A296635F1696D"
     },
     {
       "id": "steamadvantage",
-      "version": "2.2.2.110021",
-      "file": "SteamAdvantage-2.2.2.110021.jar",
-      "path": "../../SteamAdvantage/SteamAdvantage/build/libs/SteamAdvantage-2.2.2.110021.jar",
-      "sha256": "C87F24CF61CB5A5F05B7DA0D9E2C538D77DDE21D665A07D5C1CA64AF912BC3F8"
+      "version": "2.2.3.110021",
+      "file": "SteamAdvantage-2.2.3.110021.jar",
+      "path": "../../SteamAdvantage/SteamAdvantage/build/libs/SteamAdvantage-2.2.3.110021.jar",
+      "sha256": "C94B55D813D939FB5679BCD5EED4672BE75491F0D2975A40C1393AABEFBABE4C"
     },
     {
       "id": "electricadvantage",
-      "version": "2.2.2.110021",
-      "file": "ElectricAdvantage-2.2.2.110021.jar",
-      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs/ElectricAdvantage-2.2.2.110021.jar",
-      "sha256": "0E21D309E5FCDF91836008277C4A861F89E699C219A3B2FA634C871B90E91D43"
+      "version": "2.2.3.110021",
+      "file": "ElectricAdvantage-2.2.3.110021.jar",
+      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs/ElectricAdvantage-2.2.3.110021.jar",
+      "sha256": "643C6754165694187BDB6D8D3A1DAD0A9B25106F4711DFE60F57FCDE4D6B0F48"
     },
     {
       "id": "basemetals",
@@ -53,10 +53,11 @@
     },
     {
       "id": "orespawn",
-      "version": "1.1.0",
-      "file": "OreSpawn_1.10.2-1.1.0.jar",
-      "path": "../libs/OreSpawn_1.10.2-1.1.0.jar",
-      "sha256": "91345E4B825AA06E05F470066F467AABA0C7A2804A8DBCA4D3CD1905ED53607C"
+      "version": "4.0.8.110021",
+      "file": "OreSpawn-4.0.8.110021.jar",
+      "path": "../../../../MinecraftMineralogy/OS110/OreSpawn/build/libs/OreSpawn-4.0.8.110021.jar",
+      "sha256": "FD27D4F5B4B6087C5F64344903C0E0124115E08FA2D465ECDB88D291F36B2B21",
+      "workspaceProduced": true
     }
   ]
 }

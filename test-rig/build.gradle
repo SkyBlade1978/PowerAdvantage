@@ -106,6 +106,7 @@ def registerWorksRunner = { String taskName, String profileName, boolean automat
         group = 'verification'
         description = taskDescription
         dependsOn tasks.named('jar')
+        dependsOn releaseJar
         dependsOn tasks.named('runnerClasses')
         classpath = sourceSets.runner.runtimeClasspath
         mainClass = 'com.mcmoddev.advantageworks.runner.WorksRunner'
@@ -133,13 +134,21 @@ registerWorksRunner('verifyWorksTechProgression', 'dev-core-tech-progression', t
 registerWorksRunner('verifyWorksApocalyptic', 'dev-core-apocalyptic', true,
         'Checks registration and construction with APOCALYPTIC recipes.')
 registerWorksRunner('verifyWorksPackagedCurrent', 'packaged-current', true,
-        'Runs packaged Advantage mods with current BaseMetals and OreSpawn.')
+        'Runs packaged Advantage mods with current BaseMetals and pinned OreSpawn 4.')
 registerWorksRunner('verifyWorksPackagedLegacy', 'packaged-legacy', true,
-        'Runs packaged Advantage mods with legacy BaseMetals and OreSpawn.')
+        'Runs packaged Advantage mods with legacy BaseMetals and pinned OreSpawn 4.')
 registerWorksRunner('verifyWorksPackagedDecoupled', 'packaged-decoupled', true,
-        'Runs packaged Advantage mods without BaseMetals or OreSpawn.')
+        'Runs packaged Advantage mods without BaseMetals or Mineralogy, retaining required OreSpawn 4.')
+registerWorksRunner('verifyWorksPackagedMineralogy', 'packaged-mineralogy', true,
+        'Runs Mineralogy crude oil through packaged Power distillation and Steam boilers.')
 registerWorksRunner('verifyWorksPackagedOptionalPower', 'packaged-optional-power', true,
         'Runs packaged Advantage mods with RF and RebornCore converter APIs.')
+registerWorksRunner('verifyWorksWorldgenAdvantage', 'worldgen-advantage', true,
+        'Samples Advantage fallback ores and desert oil, then verifies profile overrides through restart.')
+registerWorksRunner('verifyWorksWorldgenMineralogy', 'worldgen-mineralogy', true,
+        'Samples Mineralogy-owned sulfur/ocean oil and Advantage fallbacks through restart.')
+registerWorksRunner('verifyWorksWorldgenLegacyImport', 'worldgen-legacy-import', true,
+        'Imports legacy Power/Electric OreSpawn files and rejects duplicate active modern rules.')
 registerWorksRunner('runWorksPackagedCurrent', 'packaged-current', false,
         'Launches the complete packaged works on localhost for manual inspection.')
 
@@ -147,7 +156,7 @@ tasks.register('verifyHarnessIsolation') {
     group = 'verification'
     description = 'Confirms the PowerAdvantage release contains no test-harness content.'
     doLast {
-        File powerJar = file('../build/libs/PowerAdvantage-2.4.1.110021.jar')
+        File powerJar = file('../build/libs/PowerAdvantage-2.4.2.110021.jar')
         if (!powerJar.isFile()) {
             throw new GradleException("Build PowerAdvantage first: ${powerJar}")
         }

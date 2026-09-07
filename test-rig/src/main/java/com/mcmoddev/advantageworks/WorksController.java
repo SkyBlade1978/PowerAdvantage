@@ -26,7 +26,11 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
@@ -173,6 +177,151 @@ final class WorksController {
         return "Checkpoint written for " + station.id + " to " + result.getPath();
     }
 
+    synchronized String sampleWorldgen(MinecraftServer server, int radius) throws CommandException {
+        if (radius < 1 || radius > 16) {
+            throw new CommandException("Worldgen sample radius must be between 1 and 16 chunks");
+        }
+        WorldServer world = overworld(server);
+        Map<String, String> expectedBiomes = new LinkedHashMap<>();
+        expectedBiomes.put("poweradvantage:crude_oil", "DESERT");
+        expectedBiomes.put("mineralogy:crude_oil", "OCEAN");
+        expectedBiomes.put("electricadvantage:li_ore", null);
+        expectedBiomes.put("electricadvantage:sulfur_ore", null);
+        expectedBiomes.put("mineralogy:sulfur_ore", null);
+
+        Set<Long> chunks = new LinkedHashSet<>();
+        Map<String, String> centers = new LinkedHashMap<>();
+        BlockPos spawn = world.getSpawnPoint();
+        addChunkSquare(chunks, spawn.getX() >> 4, spawn.getZ() >> 4, radius);
+        centers.put("spawn", (spawn.getX() >> 4) + "," + (spawn.getZ() >> 4));
+        addBiomeSample(world, chunks, centers, BiomeDictionary.Type.getType("SANDY"), "DESERT", radius,
+                BiomeDictionary.Type.getType("BEACH"), BiomeDictionary.Type.getType("MESA"));
+        addBiomeSample(world, chunks, centers, BiomeDictionary.Type.getType("OCEAN"), "OCEAN", radius);
+
+        Map<String, Long> counts = new LinkedHashMap<>();
+        Map<String, Long> violations = new LinkedHashMap<>();
+        Map<String, Long> boundaryBlocks = new LinkedHashMap<>();
+        for (String id : expectedBiomes.keySet()) {
+            counts.put(id, 0L);
+            if (expectedBiomes.get(id) != null) {
+                violations.put(id, 0L);
+                boundaryBlocks.put(id, 0L);
+            }
+        }
+
+        // Populate a halo first; large imported OS1 clusters can cross a sampled chunk boundary.
+        Set<Long> populationChunks = new LinkedHashSet<>();
+        for (Long packed : chunks) {
+            int chunkX = (int) (packed >> 32);
+            int chunkZ = (int) (long) packed;
+            addChunkSquare(populationChunks, chunkX, chunkZ, 2);
+        }
+        for (Long packed : populationChunks) {
+            int chunkX = (int) (packed >> 32);
+            int chunkZ = (int) (long) packed;
+            world.getChunkProvider().provideChunk(chunkX, chunkZ);
+        }
+
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (Long packed : chunks) {
+            int chunkX = (int) (packed >> 32);
+            int chunkZ = (int) (long) packed;
+            Chunk chunk = world.getChunkProvider().provideChunk(chunkX, chunkZ);
+            int minX = chunkX << 4;
+            int minZ = chunkZ << 4;
+            Biome chunkCenterBiome = world.getBiome(
+                    new BlockPos(minX + 8, world.getSeaLevel(), minZ + 8));
+            for (int localX = 0; localX < 16; localX++) {
+                for (int localZ = 0; localZ < 16; localZ++) {
+                    cursor.setPos(minX + localX, 0, minZ + localZ);
+                    for (int y = 0; y <= 96; y++) {
+                        cursor.setY(y);
+                        ResourceLocation id = Block.REGISTRY.getNameForObject(
+                                chunk.getBlockState(cursor).getBlock());
+                        String name = id == null ? null : id.toString();
+                        if (name == null || !counts.containsKey(name)) continue;
+                        counts.put(name, counts.get(name) + 1L);
+                        String expectedBiome = expectedBiomes.get(name);
+                        if (expectedBiome != null && !matchesExpectedBiome(expectedBiome, chunkCenterBiome)) {
+                            violations.put(name, violations.get(name) + 1L);
+                        } else if (expectedBiome != null
+                                && !matchesExpectedBiome(expectedBiome, world.getBiome(cursor))) {
+                            boundaryBlocks.put(name, boundaryBlocks.get(name) + 1L);
+                        }
+                        }
+                    }
+                }
+            }
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("radius", radius);
+        payload.put("chunksScanned", chunks.size());
+        payload.put("centers", centers);
+        payload.put("counts", counts);
+        payload.put("biomeViolations", violations);
+        payload.put("biomeBoundaryBlocks", boundaryBlocks);
+        File result = resultWriter.write("worldgen", "sample", payload);
+        return "Worldgen sample wrote " + chunks.size() + " chunks to " + result.getPath()
+                + ": " + counts;
+    }
+
+    private static void addBiomeSample(WorldServer world, Set<Long> chunks,
+                                       Map<String, String> centers,
+                                       BiomeDictionary.Type type, String label, int radius,
+                                       BiomeDictionary.Type... excludedTypes) {
+        BlockPos origin = world.getSpawnPoint();
+        BlockPos located = null;
+        double bestDistance = Double.POSITIVE_INFINITY;
+        int originChunkX = origin.getX() >> 4;
+        int originChunkZ = origin.getZ() >> 4;
+        for (int offsetZ = -256; offsetZ <= 256; offsetZ += 4) {
+            for (int offsetX = -256; offsetX <= 256; offsetX += 4) {
+                BlockPos candidate = new BlockPos(
+                        (originChunkX + offsetX) << 4, world.getSeaLevel(),
+                        (originChunkZ + offsetZ) << 4);
+                Biome biome = world.getBiome(candidate);
+                if (!BiomeDictionary.isBiomeOfType(biome, type)
+                        || hasAnyBiomeType(biome, excludedTypes)) continue;
+                double distance = candidate.distanceSq(origin);
+                if (distance < bestDistance) {
+                    located = candidate;
+                    bestDistance = distance;
+                }
+            }
+        }
+        if (located == null) {
+            centers.put(label, "NOT_FOUND");
+            return;
+        }
+        int chunkX = located.getX() >> 4;
+        int chunkZ = located.getZ() >> 4;
+        centers.put(label, chunkX + "," + chunkZ);
+        addChunkSquare(chunks, chunkX, chunkZ, radius);
+    }
+
+    private static boolean matchesExpectedBiome(String expected, Biome biome) {
+        if ("DESERT".equals(expected)) {
+            return BiomeDictionary.isBiomeOfType(biome, BiomeDictionary.Type.getType("SANDY"))
+                    && !BiomeDictionary.isBiomeOfType(biome, BiomeDictionary.Type.getType("BEACH"))
+                    && !BiomeDictionary.isBiomeOfType(biome, BiomeDictionary.Type.getType("MESA"));
+        }
+        return BiomeDictionary.isBiomeOfType(biome, BiomeDictionary.Type.getType(expected));
+    }
+
+    private static boolean hasAnyBiomeType(Biome biome, BiomeDictionary.Type... types) {
+        for (BiomeDictionary.Type type : types) {
+            if (BiomeDictionary.isBiomeOfType(biome, type)) return true;
+        }
+        return false;
+    }
+
+    private static void addChunkSquare(Set<Long> chunks, int centerX, int centerZ, int radius) {
+        for (int chunkZ = centerZ - radius; chunkZ <= centerZ + radius; chunkZ++) {
+            for (int chunkX = centerX - radius; chunkX <= centerX + radius; chunkX++) {
+                chunks.add((((long) chunkX) << 32) ^ (chunkZ & 0xffffffffL));
+            }
+        }
+    }
     List<String> stationIdsWithAll() {
         loadDefinition();
         List<String> ids = new ArrayList<>();
@@ -480,6 +629,7 @@ final class WorksController {
     private void applyActions(WorldServer world, WorksDefinition.Station station,
                               List<WorksDefinition.Action> actions) {
         for (WorksDefinition.Action action : actions) {
+            if (!requirementsPresent(action.requiredMods)) continue;
             String type = action.type == null ? "setBlock" : action.type;
             BlockPos pos = action.pos == null ? null : absolute(station, action.pos);
             switch (type) {
@@ -598,6 +748,7 @@ final class WorksController {
 
     private void applyPlacement(WorldServer world, WorksDefinition.Station station,
                                 WorksDefinition.Placement placement) {
+        if (!requirementsPresent(placement.requiredMods)) return;
         Block target = block(placement.block);
         if (target == Blocks.AIR && !"minecraft:air".equals(placement.block)) {
             if (placement.optional) return;

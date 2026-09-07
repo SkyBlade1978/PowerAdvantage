@@ -95,6 +95,8 @@ public class WorksDefinitionTest {
         assertTrue(manual.toString().contains("EA-110-002"));
         assertTrue(manual.toString().contains("EA-110-003"));
 
+        assertConditionalAssertion(definition, "W-03", "mineralogy-oil-input-consumed", "mineralogy");
+        assertConditionalAssertion(definition, "W-03", "mineralogy-oil-output-created", "mineralogy");
         assertAssertion(definition, "S-01", "geothermal-temperature-persisted", "nbtNumber");
         assertAssertion(definition, "S-04", "crusher-one-item-signal", "comparatorOutput");
         assertAssertion(definition, "S-06", "pump-fluid-persisted", "nbtNumber");
@@ -123,6 +125,19 @@ public class WorksDefinitionTest {
         assertTrue("Missing component coverage: " + missing, missing.isEmpty());
     }
 
+    private static void assertConditionalAssertion(WorksDefinition definition, String stationId,
+                                                   String assertionId, String requiredMod) {
+        for (WorksDefinition.Station station : definition.stations) {
+            if (!stationId.equals(station.id)) continue;
+            for (WorksDefinition.Assertion assertion : station.assertions) {
+                if (assertionId.equals(assertion.id)) {
+                    assertTrue(assertion.requiredMods.contains(requiredMod));
+                    return;
+                }
+            }
+        }
+        throw new AssertionError("Missing conditional assertion " + stationId + "/" + assertionId);
+    }
     private static void assertAssertion(WorksDefinition definition, String stationId,
                                         String assertionId, String assertionType) {
         for (WorksDefinition.Station station : definition.stations) {
