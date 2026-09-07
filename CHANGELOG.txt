@@ -1,6 +1,6 @@
 Power Advantage 2.4.2.110021
 
-- Register a typed OreSpawn 4 provider for large covered crude-oil deposits beneath desert biomes.
+- Register a typed OreSpawn 4 provider for large covered crude-oil deposits in Forge `SANDY` biomes, excluding beaches and mesas.
 - Preserve imported legacy OreSpawn settings and established world profiles as player authority.
 - Add the public crude-oil fluid category with Power, Mineralogy, legacy, and configurable aliases.
 - Distil and fuel from every registered crude-oil alias without renaming either mod's fluid.

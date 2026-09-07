@@ -53,7 +53,9 @@ public final class OreSpawnWorldGen {
                                 .minSolidShell(1)
                                 .hostBlock(new ResourceLocation("minecraft", "stone"))
                                 .hostTag(STONE_TAG)
-                                .biomeDictionary("DESERT")))
+                                .biomeDictionary("SANDY")
+                                .excludeBiomeDictionary("BEACH")
+                                .excludeBiomeDictionary("MESA")))
                 .build();
     }
 

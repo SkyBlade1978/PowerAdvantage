@@ -25,6 +25,8 @@ public class OreSpawnWorldGenTest {
         assertEquals(12, overworld.get("max_radius").getAsInt());
         assertEquals(2, overworld.get("min_solid_cover").getAsInt());
         assertEquals(1, overworld.get("min_solid_shell").getAsInt());
-        assertEquals("DESERT", overworld.getAsJsonArray("biome_dictionary").get(0).getAsString());
+        assertEquals("SANDY", overworld.getAsJsonArray("biome_dictionary").get(0).getAsString());
+        assertEquals("BEACH", overworld.getAsJsonArray("excluded_biome_dictionary").get(0).getAsString());
+        assertEquals("MESA", overworld.getAsJsonArray("excluded_biome_dictionary").get(1).getAsString());
     }
 }

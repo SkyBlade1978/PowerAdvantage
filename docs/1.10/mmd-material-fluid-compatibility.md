@@ -24,7 +24,7 @@ This document is the source-of-truth contract for Power Advantage, Steam Advanta
 | Sulfur | Mineralogy, then BaseMinerals, then ElectricAdvantage | Electric sulfur is enabled only when neither `mineralogy` nor `baseminerals` is loaded. |
 | Lithium | BaseMinerals, then ElectricAdvantage | Electric lithium is enabled only when `baseminerals` is absent. |
 | Ocean crude oil | Mineralogy | Mineralogy's existing deposit remains enabled beneath `OCEAN` biomes. |
-| Desert crude oil | PowerAdvantage | Power's complementary deposit is enabled beneath `DESERT` biomes. |
+| Desert crude oil | PowerAdvantage | Power's complementary deposit uses Forge 1.10's `SANDY` category while excluding `BEACH` and `MESA`; Forge 1.10 has no `DESERT` dictionary type. |
 
 BaseMinerals has not yet been modernized. Until that work is complete, an installation containing both current BaseMinerals and Mineralogy may still generate both mods' sulfur. The later BaseMinerals pass must add its typed provider, preserve its IDs, and implement the priority above.
 
@@ -32,7 +32,7 @@ BaseMinerals has not yet been modernized. Until that work is complete, an instal
 
 | Provider rule | Output | Placement |
 | --- | --- | --- |
-| `poweradvantage:fluid_deposit/desert_crude_oil` | block `poweradvantage:crude_oil`, fluid `crude_oil` | Overworld, Y 0-48, frequency 0.08, radius 5-12, vertical radius 2-5, up to four lobes, two-block cover, one-block shell, `DESERT` biomes. |
+| `poweradvantage:fluid_deposit/desert_crude_oil` | block `poweradvantage:crude_oil`, fluid `crude_oil` | Overworld, Y 0-48, frequency 0.08, radius 5-12, vertical radius 2-5, up to four lobes, two-block cover, one-block shell, Forge `SANDY` biomes excluding `BEACH` and `MESA`. |
 | `electricadvantage:ore/sulfur` | `electricadvantage:sulfur_ore` | Overworld, Y 1-31, frequency 1.0, quantity 8-23, default pattern, stone and all OreSpawn geology families. |
 | `electricadvantage:ore/lithium` | `electricadvantage:li_ore` | Overworld, Y 1-31, frequency 0.125, quantity 6-9, default pattern, stone and all OreSpawn geology families. |
 | `mineralogy:fluid_deposit/crude_oil` | block `mineralogy:crude_oil`, fluid `mineralogy_crude_oil` | Mineralogy's packaged provider; large covered deposits beneath `OCEAN` biomes. |
