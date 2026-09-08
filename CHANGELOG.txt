@@ -1,3 +1,9 @@
+Power Advantage 2.4.3.110021
+
+- Move the implementation namespace to zone.moddev.mc.poweradvantage while preserving runtime identities.
+- Add a stable public API for offering fluids to Power Advantage conduit networks.
+- Retain the legacy cyano API ABI and narrow compatibility facades for released Iron Age Furniture builds.
+
 Power Advantage 2.4.2.110021
 
 - Register a typed OreSpawn 4 provider for large covered crude-oil deposits in Forge `SANDY` biomes, excluding beaches and mesas.

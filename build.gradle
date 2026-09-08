@@ -292,7 +292,7 @@ tasks.register('verifyReleaseConfiguration') {
     group = 'verification'
     description = 'Validates release identity, target metadata, and optional integration policy.'
     doLast {
-        if (project.mod_version != '2.4.2.110021') {
+        if (project.mod_version != '2.4.3.110021') {
             throw new GradleException("Unexpected PowerAdvantage release version: ${project.mod_version}")
         }
         if (project.minecraft_version != '1.10.2'
@@ -308,7 +308,7 @@ tasks.register('verifyReleaseConfiguration') {
             throw new GradleException('Unexpected release dispatcher target metadata')
         }
         if (project.mod_id != 'poweradvantage'
-                || project.group.toString() != 'com.mcmoddev.poweradvantage'
+                || project.group.toString() != 'zone.moddev.mc.poweradvantage'
                 || base.archivesName.get() != 'PowerAdvantage'
                 || project.curseforge_project_id != '240982') {
             throw new GradleException('Unexpected Forge, Maven, archive, or CurseForge identity')
@@ -338,9 +338,9 @@ tasks.register('verifyReleaseConfiguration') {
             }
         }
         String mainSource = file(
-                'src/main/java/com/mcmoddev/poweradvantage/PowerAdvantage.java').getText('UTF-8')
+                'src/main/java/zone/moddev/mc/poweradvantage/PowerAdvantage.java').getText('UTF-8')
         if (!mainSource.contains('MODID = "poweradvantage"')
-                || !mainSource.contains('VERSION = "2.4.2.110021"')
+                || !mainSource.contains('VERSION = "2.4.3.110021"')
                 || !mainSource.contains('required-after:orespawn@[4.0.6,5.0.0);after:basemetals')) {
             throw new GradleException('PowerAdvantage source identity or dependency policy changed')
         }
@@ -475,14 +475,34 @@ tasks.register('verifyReleaseArtifacts') {
         new ZipFile(mainJar).withCloseable { zip ->
             List<String> names = zip.entries().collect { it.name }
             ['mcmod.info', 'pack.mcmeta',
-             'com/mcmoddev/poweradvantage/PowerAdvantage.class',
+             'zone/moddev/mc/poweradvantage/PowerAdvantage.class',
              'cyano/poweradvantage/api/PoweredEntity.class',
+             'cyano/poweradvantage/api/fluid/FluidNetworkApi.class',
+             'com/mcmoddev/poweradvantage/math/Integer2D.class',
+             'com/mcmoddev/poweradvantage/registry/ITileEntityGUI.class',
+             'com/mcmoddev/poweradvantage/conduitnetwork/ConduitRegistry.class',
+             'com/mcmoddev/poweradvantage/init/Fluids.class',
              'assets/poweradvantage/lang/en_US.lang'].each { required ->
                 if (!names.contains(required)) {
                     throw new GradleException("Release jar is missing ${required}")
                 }
             }
+            def allowedLegacyClasses = [
+                    'com/mcmoddev/poweradvantage/math/Integer2D.class',
+                    'com/mcmoddev/poweradvantage/registry/ITileEntityGUI.class',
+                    'com/mcmoddev/poweradvantage/conduitnetwork/ConduitRegistry.class',
+                    'com/mcmoddev/poweradvantage/init/Fluids.class'
+            ] as Set
+            def legacyImplementationClasses = names.findAll {
+                it.startsWith('com/mcmoddev/poweradvantage/') && it.endsWith('.class')
+            } as Set
+            if (legacyImplementationClasses != allowedLegacyClasses) {
+                throw new GradleException("Unexpected legacy implementation classes: "
+                        + "${legacyImplementationClasses - allowedLegacyClasses}; missing: "
+                        + "${allowedLegacyClasses - legacyImplementationClasses}")
+            }
             ['agent-notes/', '.codex/', 'src/test/', 'com/mcmoddev/advantageworks/',
+             'zone/moddev/mc/advantageworks/',
              'assets/advantageworkstest/', 'cofh/api/', 'reborncore/api/',
              'zone/moddev/mc/orespawn/', 'com/mcmoddev/orespawn/',
              'net/minecraft/', 'net/minecraftforge/'].each { forbidden ->
@@ -519,8 +539,9 @@ tasks.register('verifyReleaseArtifacts') {
         }
 
         new ZipFile(new File(libs, expectedReleaseFiles.get()[1])).withCloseable { sourceZip ->
-            if (sourceZip.getEntry('com/mcmoddev/poweradvantage/PowerAdvantage.java') == null
-                    || sourceZip.getEntry('cyano/poweradvantage/api/PoweredEntity.java') == null) {
+            if (sourceZip.getEntry('zone/moddev/mc/poweradvantage/PowerAdvantage.java') == null
+                    || sourceZip.getEntry('cyano/poweradvantage/api/PoweredEntity.java') == null
+                    || sourceZip.getEntry('cyano/poweradvantage/api/fluid/FluidNetworkApi.java') == null) {
                 throw new GradleException('Sources jar is missing implementation or legacy API sources')
             }
         }

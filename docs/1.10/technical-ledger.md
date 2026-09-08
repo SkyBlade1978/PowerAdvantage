@@ -409,7 +409,7 @@ Paths are relative to each named repository at the pinned commits in the [editio
 | Tick scheduling and save bridges | Power: `src/main/java/cyano/poweradvantage/api/PoweredEntity.java` |
 | Priority and request sorting | Power: `src/main/java/cyano/poweradvantage/api/PowerRequest.java` |
 | Shared machine persistence/automation | Power: `src/main/java/cyano/poweradvantage/api/simple/TileEntitySimplePowerMachine.java`, `TileEntitySimpleFluidMachine.java` |
-| Conduit discovery/distribution | Power: `src/main/java/com/mcmoddev/poweradvantage/conduitnetwork/ConduitRegistry.java` and adjacent conduit-network classes |
+| Conduit discovery/distribution | Power: `src/main/java/zone/moddev/mc/poweradvantage/conduitnetwork/ConduitRegistry.java` and adjacent conduit-network classes |
 | Power identities and recipes | Power: `init/Blocks.java`, `Items.java`, `Fluids.java`, `Entities.java`, `Recipes.java`, `ModSupport.java` |
 | Conveyor and fluid behaviour | Power: `machines/conveyors/*`, `machines/fluidmachines/*` |
 | Steam identities/rates | Steam: `init/Blocks.java`, `Items.java`, `Entities.java`, `Power.java`, `Recipes.java`; `machines/*` |
