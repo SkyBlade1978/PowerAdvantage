@@ -6365,6 +6365,139 @@
         "Do not test reversible metal storage recipes in a valued world.",
         "A pass for one material does not clear the wider recipe graph."
       ]
+    },
+    {
+      "id": "P-API-01",
+      "name": "Public Fluid Network API",
+      "district": "power",
+      "origin": [
+        -64,
+        3,
+        0
+      ],
+      "boundsMin": [
+        0,
+        0,
+        0
+      ],
+      "boundsMax": [
+        27,
+        15,
+        27
+      ],
+      "exclusive": false,
+      "requiredMods": [
+        "poweradvantage"
+      ],
+      "placements": [
+        {
+          "pos": [
+            7,
+            1,
+            7
+          ],
+          "block": "poweradvantage:fluid_pipe",
+          "meta": 0
+        },
+        {
+          "pos": [
+            8,
+            1,
+            7
+          ],
+          "block": "poweradvantage:fluid_storage_tank",
+          "meta": 0
+        },
+        {
+          "pos": [
+            12,
+            1,
+            7
+          ],
+          "block": "minecraft:cobblestone",
+          "meta": 0
+        }
+      ],
+      "setupActions": [],
+      "startActions": [
+        {
+          "type": "offerFluid",
+          "pos": [
+            12,
+            1,
+            7
+          ],
+          "fluid": "water",
+          "value": 1000,
+          "transferLimit": 1000,
+          "expectedValue": 0
+        },
+        {
+          "type": "offerFluid",
+          "pos": [
+            7,
+            1,
+            7
+          ],
+          "fluid": "water",
+          "value": 6000,
+          "transferLimit": 1000,
+          "expectedValue": 1000
+        },
+        {
+          "type": "offerFluid",
+          "pos": [
+            7,
+            1,
+            7
+          ],
+          "fluid": "water",
+          "value": 5000,
+          "transferLimit": 5000,
+          "expectedValue": 3000
+        },
+        {
+          "type": "offerFluid",
+          "pos": [
+            7,
+            1,
+            7
+          ],
+          "fluid": "water",
+          "value": 1000,
+          "transferLimit": 1000,
+          "expectedValue": 0
+        }
+      ],
+      "stopActions": [],
+      "assertions": [
+        {
+          "id": "api-pipe",
+          "type": "block",
+          "pos": [
+            7,
+            1,
+            7
+          ],
+          "block": "poweradvantage:fluid_pipe"
+        },
+        {
+          "id": "api-tank-filled",
+          "type": "nbtNumber",
+          "pos": [
+            8,
+            1,
+            7
+          ],
+          "nbtPath": "Tank.Amount",
+          "operator": "equals",
+          "value": 4000
+        }
+      ],
+      "manualChecks": [
+        "After start, open the storage tank and confirm it contains exactly 4,000 mB of water.",
+        "Reset before starting this station again; its full-tank rejection is deliberately stateful."
+      ]
     }
   ]
 }

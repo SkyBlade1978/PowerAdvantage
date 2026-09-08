@@ -5,7 +5,7 @@ import cyano.poweradvantage.api.PowerConnectorContext;
 import cyano.poweradvantage.api.PowerRequest;
 import cyano.poweradvantage.api.fluid.FluidPoweredEntity;
 import cyano.poweradvantage.api.fluid.FluidRequest;
-import com.mcmoddev.poweradvantage.init.Fluids;
+import zone.moddev.mc.poweradvantage.init.Fluids;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;

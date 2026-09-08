@@ -7,8 +7,8 @@
   "shutdownTimeoutSeconds": 60,
   "stationRunSeconds": 5,
   "recipeMode": "NORMAL",
-  "sourceCommit": "18e5192b73c6768208c1d5c5687ea230ed470bc6",
-  "sourceVersion": "2.4.2.110021",
+  "sourceCommit": "2443eaae7c666b8d54a5c9c30091892b79e80994",
+  "sourceVersion": "2.4.3.110021",
   "forge": {
     "version": "1.10.2-12.18.3.2511",
     "installerPath": ".cache/forge-1.10.2-12.18.3.2511-installer.jar",
@@ -25,24 +25,24 @@
     },
     {
       "id": "poweradvantage",
-      "version": "2.4.2.110021",
-      "file": "PowerAdvantage-2.4.2.110021.jar",
-      "path": "../build/libs/PowerAdvantage-2.4.2.110021.jar",
-      "sha256": "BA4E1006E3C5D269B701AC6BC2A5072111EE79A4E8D34F201B5A296635F1696D"
+      "version": "2.4.3.110021",
+      "file": "PowerAdvantage-2.4.3.110021.jar",
+      "path": "../build/libs/PowerAdvantage-2.4.3.110021.jar",
+      "sha256": "07C9F409034F762CA77F336ECB65B04E814A24E22B7D2C95824BAA52CDBA9D56"
     },
     {
       "id": "steamadvantage",
-      "version": "2.2.3.110021",
-      "file": "SteamAdvantage-2.2.3.110021.jar",
-      "path": "../../SteamAdvantage/SteamAdvantage/build/libs/SteamAdvantage-2.2.3.110021.jar",
-      "sha256": "C94B55D813D939FB5679BCD5EED4672BE75491F0D2975A40C1393AABEFBABE4C"
+      "version": "2.2.4.110021",
+      "file": "SteamAdvantage-2.2.4.110021.jar",
+      "path": "../../SteamAdvantage/SteamAdvantage/build/libs/SteamAdvantage-2.2.4.110021.jar",
+      "sha256": "F9A1081C1D6D80BA1C9BE0DEE9975148B16D4622300A0198F59C92E354A3F54C"
     },
     {
       "id": "electricadvantage",
-      "version": "2.2.3.110021",
-      "file": "ElectricAdvantage-2.2.3.110021.jar",
-      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs/ElectricAdvantage-2.2.3.110021.jar",
-      "sha256": "643C6754165694187BDB6D8D3A1DAD0A9B25106F4711DFE60F57FCDE4D6B0F48"
+      "version": "2.2.4.110021",
+      "file": "ElectricAdvantage-2.2.4.110021.jar",
+      "path": "../../ElectricAdvantage/ElectricAdvantage/build/libs/ElectricAdvantage-2.2.4.110021.jar",
+      "sha256": "878613C35B91B123ACEDB8E3450E93E4CDB14CA5FEDE1964C2DAAA84568573E2"
     },
     {
       "id": "orespawn",
